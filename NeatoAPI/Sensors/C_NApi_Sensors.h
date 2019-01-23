@@ -105,10 +105,17 @@ private:
     // This is virtual only
     double m_RplidarLidarMotorSpeed;
 
+#if 0 /* FIXME : DEBUG : valeurs TNG */
     const int RPLIDAR_LIDAR_OFFSET_X__mm = 175;
     const int RPLIDAR_LIDAR_OFFSET_X__scaled = RPLIDAR_LIDAR_OFFSET_X__mm * 0.06;
     const int RPLIDAR_LIDAR_OFFSET_Y__mm = -40;
     const int RPLIDAR_LIDAR_OFFSET_Y__scaled = RPLIDAR_LIDAR_OFFSET_Y__mm * 0.06;
+#else /* FIXME : DEBUG : valeurs Goldo */
+    const int RPLIDAR_LIDAR_OFFSET_X__mm = 0;
+    const int RPLIDAR_LIDAR_OFFSET_X__scaled = RPLIDAR_LIDAR_OFFSET_X__mm * 0.06;
+    const int RPLIDAR_LIDAR_OFFSET_Y__mm = 0;
+    const int RPLIDAR_LIDAR_OFFSET_Y__scaled = RPLIDAR_LIDAR_OFFSET_Y__mm * 0.06;
+#endif
 
 
     bool m_RplidarReady = false;

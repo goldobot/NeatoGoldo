@@ -1,6 +1,9 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+
+#if 0 /* FIXME : DEBUG : valeurs TNG */
+
 // GLOBAL MAP MODEL
 // ======================================================================================
 // The estimated map is a square
@@ -19,6 +22,30 @@
 #define LIDAR_MAX_RELIABLE_MESURED_DISTANCE__MM 10000
 #define LIDAR_MIN_DIST_TO_ADD_VIRTUAL_MEASURES__MM 2000
 #define LIDAR_MAX_NB_OF_VIRTUAL_MEASURES_AT_MAX_DIST 20
+
+#else /* FIXME : DEBUG : valeurs Goldo */
+
+// GLOBAL MAP MODEL
+// ======================================================================================
+// The estimated map is a square
+#define GLOBAL_MAP_SIDE_SIZE__MM 6000
+
+// ROBOT MODEL
+// ======================================================================================
+#define ROBOT_BASE_RADIUS__MM 125.0
+#define ROBOT_ROTATION_RADIUS__MM 124
+#define ROBOT_WHEELS_USURY_CORRECTION_FACTOR 1.0706
+#define ROBOT_CONV_DEG_2_LEFT_RIGHT_WHEELS_DISTANCES (ROBOT_ROTATION_RADIUS__MM * MATHS_CONV_DEG_2_RAD * ROBOT_WHEELS_USURY_CORRECTION_FACTOR)
+
+// LIDAR MODEL
+// ======================================================================================
+#define LIDAR_NB_MEASURES_PER_REVOLUTION 360
+#define LIDAR_MAX_RELIABLE_MESURED_DISTANCE__MM 3000
+#define LIDAR_MIN_DIST_TO_ADD_VIRTUAL_MEASURES__MM 2000
+#define LIDAR_MAX_NB_OF_VIRTUAL_MEASURES_AT_MAX_DIST 20
+
+#endif
+
 
 // MATHS TOOLS
 // ======================================================================================
