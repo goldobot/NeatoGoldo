@@ -11,7 +11,6 @@
 #include "NeatoAPI/Sensors/C_NApi_Sensors.h"
 #include "NeatoAPI/SerialCom/C_NApi_SerialCom.h"
 #include "NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar.h"
-#include "PathFinder/C_PathFinder.h"
 
 class C_Main : public QMainWindow
 {
@@ -38,9 +37,6 @@ private:
     C_NApi_SerialCom * m_ptApiSerialCom = 0;
 
 
-    // API to the robot sensors
-    C_PathFinder * m_ptPathFinder = 0;
-
     // API to the Rplidar communication port
     C_NApi_SocketComRplidar * m_ptApiSocketComRplidar = 0;
 
@@ -54,10 +50,6 @@ private slots:
     // Show or hide the sensor UI
     void on_btn_ShowCommand_clicked();
     void on_btn_ShowSensors_clicked();
-    void on_btn_ShowSerialCom_clicked();
-
-    void on_btn_ShowSocketComRplidar_clicked();
-    void on_btn_ShowPathFinder_clicked();
 
     // Closing the window
     void closeEvent (QCloseEvent * ptEvent);
@@ -65,10 +57,6 @@ private slots:
     // Closing the child windows
     void SLOT_ClosingCommandsWindow(void);
     void SLOT_ClosingSensorsWindow(void);
-    void SLOT_ClosingSerialComWindow(void);
-
-    void SLOT_ClosingSocketComRplidarWindow(void);
-    void SLOT_ClosingPathFinderWindow(void);
 
     // Check the malfunction of a module
     void SLOT_PeriodicCheckModulesMalFunction();

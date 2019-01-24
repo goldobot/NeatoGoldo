@@ -1,18 +1,11 @@
 #ifndef C_NAPI_SERIALCOM_H
 #define C_NAPI_SERIALCOM_H
 
-#include <QMainWindow>
-#include <QCloseEvent>
-#include <QMessageBox>
-#include <QLabel>
 #include <QSerialPort>
 #include <QThread>
 #include <QTimer>
 #include <QtCore/QtGlobal>
 
-#include "ui_C_NApi_SerialCom.h"
-
-#include "C_NApi_SerialCom_Console.h"
 #include "C_NApi_SerialCom_Protocol.h"
 #include "C_NApi_SerialCom_Settings.h"
 
@@ -53,13 +46,13 @@
 #define MOTORS_BACKWARD_LEFT_V2   0xA1
 #define MOTORS_BACKWARD_LEFT_V3   0xA2
 
-class C_NApi_SerialCom : public QMainWindow
+class C_NApi_SerialCom : public QObject
 {
     Q_OBJECT
 
 public:
     // Constructor
-    explicit C_NApi_SerialCom(QWidget * ptParent = 0);
+    explicit C_NApi_SerialCom();
 
     // Destructor
     ~C_NApi_SerialCom();
@@ -88,31 +81,14 @@ public:
 public slots:
     void SLOT_ExecuteCmd(enum_MvtCmd cmd, int speed, double param);
 
-signals:
-    // Closing the window
-    void SIG_ClosingWindow(void);
-
 private :
     QByteArray GetNextCmdOrCloseConnection(void);
     void TryExecuteCmd(QByteArray cmdToExecute);
 
     void InitActions();
-    void ShowStatusMessage(const QString &message);
-    void ShowErrorMessage(const QString &message);
-    void ShowPerf(const QString &message);
 
-    // Closing the window event
-    void closeEvent (QCloseEvent * ptEvent);
+    bool m_allowConnection = true;
 
-    bool m_allowConnection = false;
-
-    // The UI of the object
-    Ui::C_NApi_SerialCom * m_ptUi;
-
-    QLabel * m_ptStatus = nullptr;
-    QLabel * m_ptErrorStatus;
-    QLabel * m_ptPerf;
-    C_NApi_SerialCom_Console * m_ptConsole = nullptr;
     C_NApi_SerialCom_Settings * m_ptSettings = nullptr;
     QSerialPort * m_ptSerialPort = nullptr;
 
@@ -126,7 +102,6 @@ private :
 private slots:
     void SLOT_OpenPort();
     void SLOT_ClosePort();
-    void SLOT_ShowAboutDialog();
     void SLOT_WriteDataToPort(const QByteArray &data);
     void SLOT_ReadDataFromPort();
     void SLOT_ManageRespTimeout();

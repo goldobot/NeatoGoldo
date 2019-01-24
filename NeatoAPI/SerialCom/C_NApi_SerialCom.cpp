@@ -1,42 +1,15 @@
 #include "C_NApi_SerialCom.h"
 
-C_NApi_SerialCom::C_NApi_SerialCom(QWidget * ptParent) :
-    QMainWindow(ptParent),
-    m_ptUi(new Ui::C_NApi_SerialCom),
-    m_ptStatus(new QLabel),
-    m_ptConsole(new C_NApi_SerialCom_Console),
+C_NApi_SerialCom::C_NApi_SerialCom() :
     m_ptSettings(new C_NApi_SerialCom_Settings),
     m_ptSerialPort(new QSerialPort(this)),
     m_ptRobotProtocol(new C_NApi_SerialCom_Protocol)
 {
-    /* FIXME : DEBUG : FDE */
     printf ("C_NApi_SerialCom::C_NApi_SerialCom()\n");
-
-    // Configure the HMI
-    m_ptUi->setupUi(this);
-
-    m_ptConsole->setEnabled(false);
-    setCentralWidget(m_ptConsole);
-
-    m_ptUi->actionConnect->setEnabled(true);
-    m_ptUi->actionDisconnect->setEnabled(false);
-    m_ptUi->actionQuit->setEnabled(true);
-    m_ptUi->actionConfigure->setEnabled(true);
-
-    m_ptUi->statusBar->addWidget(m_ptStatus);
-
-    m_ptErrorStatus = new QLabel;
-    m_ptUi->statusBar->addWidget(m_ptErrorStatus);
-
-    m_ptPerf = new QLabel;
-    m_ptUi->statusBar->addWidget(m_ptPerf);
 
     InitActions();
 
-/* FIXME : DEBUG : FDE */
-//    connect(m_ptSerialPort, &QSerialPort::errorOccurred, this, &C_NApi_SerialCom::SLOT_HandlePortError);
     connect(m_ptSerialPort, &QSerialPort::readyRead, this, &C_NApi_SerialCom::SLOT_ReadDataFromPort);
-    connect(m_ptConsole, &C_NApi_SerialCom_Console::SIG_ReadDataFromScreen, this, &C_NApi_SerialCom::SLOT_WriteDataToPort);
 
     // Send timeout management
     m_ptRespTimeout = new QTimer(this);
@@ -46,7 +19,11 @@ C_NApi_SerialCom::C_NApi_SerialCom(QWidget * ptParent) :
 C_NApi_SerialCom::~C_NApi_SerialCom()
 {
     delete m_ptSettings;
-    delete m_ptUi;
+}
+
+C_NApi_SerialCom_Protocol *C_NApi_SerialCom::ptRobotProtocol() const
+{
+    return m_ptRobotProtocol;
 }
 
 bool C_NApi_SerialCom::ConnectRobot(void)
@@ -92,22 +69,8 @@ bool C_NApi_SerialCom::DisconnectRobot(void)
     return true;
 }
 
-void C_NApi_SerialCom::closeEvent (QCloseEvent * ptEvent)
-{
-    Q_UNUSED(ptEvent);
-
-    // Send a signal to the parent
-    emit SIG_ClosingWindow();
-}
-
-C_NApi_SerialCom_Protocol *C_NApi_SerialCom::ptRobotProtocol() const
-{
-    return m_ptRobotProtocol;
-}
-
 void C_NApi_SerialCom::SLOT_OpenPort()
 {
-    /* FIXME : DEBUG : FDE */
     printf ("C_NApi_SerialCom::SLOT_OpenPort()\n");
 
     const C_NApi_SerialCom_Settings::Settings p = m_ptSettings->settings();
@@ -120,25 +83,13 @@ void C_NApi_SerialCom::SLOT_OpenPort()
         m_ptSerialPort->setParity(p.parity);
         m_ptSerialPort->setStopBits(p.stopBits);
         m_ptSerialPort->setFlowControl(p.flowControl);
-
-        m_ptConsole->setEnabled(true);
-        m_ptConsole->SetLocalEcho(p.localEchoEnabled);
-        m_ptUi->actionConnect->setEnabled(false);
-        m_ptUi->actionDisconnect->setEnabled(true);
-        m_ptUi->actionConfigure->setEnabled(false);
-        ShowStatusMessage(tr("Connected to %1 : %2, %3, %4, %5, %6")
-                          .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
-                          .arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl));
     }
     else
     {
-        QMessageBox::critical(this, tr("Error"), m_ptSerialPort->errorString());
-
-        ShowStatusMessage(tr("Open error"));
+        printf ("C_NApi_SerialCom::SLOT_OpenPort(): Open error\n");
     }
 
     m_nbBytesReceived = 0;
-    ShowPerf(tr("Bytes received : %1").arg(m_nbBytesReceived));
 }
 
 void C_NApi_SerialCom::SLOT_ClosePort()
@@ -148,18 +99,7 @@ void C_NApi_SerialCom::SLOT_ClosePort()
         m_ptSerialPort->close();
     }
 
-    m_ptConsole->setEnabled(false);
-    m_ptUi->actionConnect->setEnabled(true);
-    m_ptUi->actionDisconnect->setEnabled(false);
-    m_ptUi->actionConfigure->setEnabled(true);
-
-    ShowStatusMessage(tr("Disconnected"));
-}
-
-void C_NApi_SerialCom::SLOT_ShowAboutDialog()
-{
-    QMessageBox::about(this, tr("Neato communication terminal"),
-                       tr("This UI shows the real time communication with the Neato low level hardware."));
+    printf ("C_NApi_SerialCom::SLOT_ClosePort(): Disconnected\n");
 }
 
 void C_NApi_SerialCom::SLOT_WriteDataToPort(const QByteArray &data)
@@ -239,7 +179,7 @@ void C_NApi_SerialCom::SLOT_ManageRespTimeout()
         {
             // Currently executing something, so it is a timeout
             m_respTimeoutCounter++;
-            ShowErrorMessage(tr("Resp. timeout counter : %1").arg(m_respTimeoutCounter));
+            printf ("C_NApi_SerialCom::SLOT_ManageRespTimeout(): Resp. timeout\n");
 
             // Redo the same command
             cmdToExecute = currentCmd;
@@ -266,9 +206,7 @@ void C_NApi_SerialCom::SLOT_ReadDataFromPort()
     const QByteArray data = m_ptSerialPort->readAll();
 
     // Cosmetic
-    m_ptConsole->WriteDataToScreen(data);
     m_nbBytesReceived += data.size();
-    ShowPerf(tr("Bytes received : %1").arg(m_nbBytesReceived));
 
     // Check wether the response is completed
     if(m_ptRobotProtocol->AddDataAndCheckMsgCompleted(data))
@@ -287,35 +225,14 @@ void C_NApi_SerialCom::SLOT_ReadDataFromPort()
 void C_NApi_SerialCom::SLOT_HandlePortError(QSerialPort::SerialPortError error)
 {
     if (error == QSerialPort::ResourceError) {
-        QMessageBox::critical(this, tr("Critical Error"), m_ptSerialPort->errorString());
+        printf ("C_NApi_SerialCom::SLOT_HandlePortError(): Critical Error\n");
         SLOT_ClosePort();
     }
 }
 
 void C_NApi_SerialCom::InitActions()
 {
-    connect(m_ptUi->actionConnect, &QAction::triggered, this, &C_NApi_SerialCom::SLOT_OpenPort);
-    connect(m_ptUi->actionDisconnect, &QAction::triggered, this, &C_NApi_SerialCom::SLOT_ClosePort);
-    connect(m_ptUi->actionQuit, &QAction::triggered, this, &C_NApi_SerialCom::close);
-    connect(m_ptUi->actionConfigure, &QAction::triggered, m_ptSettings, &C_NApi_SerialCom_Settings::show);
-    connect(m_ptUi->actionClear, &QAction::triggered, m_ptConsole, &C_NApi_SerialCom_Console::clear);
-    connect(m_ptUi->actionAbout, &QAction::triggered, this, &C_NApi_SerialCom::SLOT_ShowAboutDialog);
-    connect(m_ptUi->actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
-}
-
-void C_NApi_SerialCom::ShowStatusMessage(const QString &message)
-{
-    m_ptStatus->setText(message);
-}
-
-void C_NApi_SerialCom::ShowErrorMessage(const QString &message)
-{
-    m_ptErrorStatus->setText(message);
-}
-
-void C_NApi_SerialCom::ShowPerf(const QString &message)
-{
-    m_ptPerf->setText(message);
+    /* FIXME : TODO */
 }
 
 void C_NApi_SerialCom::SLOT_ExecuteCmd(enum_MvtCmd cmdToDo, int speed, double param)

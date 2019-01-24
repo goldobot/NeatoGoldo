@@ -42,16 +42,10 @@ HEADERS += \
     NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.h \
     NeatoAPI/Sensors/C_NApi_Sensors.h \
     NeatoAPI/SerialCom/C_NApi_SerialCom.h \
-    NeatoAPI/SerialCom/C_NApi_SerialCom_Console.h \
     NeatoAPI/SerialCom/C_NApi_SerialCom_Protocol.h \
     NeatoAPI/SerialCom/C_NApi_SerialCom_Settings.h \
     NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar.h \
-    NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Console.h \
     NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Protocol.h \
-    NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Settings.h \
-    PathFinder/astar.h \
-    PathFinder/fixinclude.h \
-    PathFinder/C_PathFinder.h \
     Tools/C_Tools_DataTable.h
 
 SOURCES += \
@@ -61,27 +55,14 @@ SOURCES += \
     NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.cpp \
     NeatoAPI/Sensors/C_NApi_Sensors.cpp \
     NeatoAPI/SerialCom/C_NApi_SerialCom.cpp \
-    NeatoAPI/SerialCom/C_NApi_SerialCom_Console.cpp \
     NeatoAPI/SerialCom/C_NApi_SerialCom_Protocol.cpp \
     NeatoAPI/SerialCom/C_NApi_SerialCom_Settings.cpp \
     NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar.cpp \
-    NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Console.cpp \
     NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Protocol.cpp \
-    NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Settings.cpp \
-    PathFinder/astar.cpp \
-    PathFinder/C_PathFinder.cpp \
     Tools/C_Tools_DataTable.cpp
 
 FORMS += \
         C_Main.ui \
     NeatoAPI/Command/C_NApi_Command.ui \
     NeatoAPI/Sensors/C_NApi_Sensors.ui \
-    NeatoAPI/SerialCom/C_NApi_SerialCom.ui \
-    NeatoAPI/SerialCom/C_NApi_SerialCom_Settings.ui \
-    NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar.ui \
-    NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Settings.ui \
-    PathFinder/C_PathFinder.ui
-
-RESOURCES += \
-    NeatoAPI/SerialCom/C_NApi_SerialCom.qrc
 
