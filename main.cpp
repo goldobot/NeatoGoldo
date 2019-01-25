@@ -7,7 +7,6 @@ int main(int argc, char *argv[])
 
     // Main window of the application
     C_Main appMainWin;
-    appMainWin.show();
 
     return app.exec();
 }

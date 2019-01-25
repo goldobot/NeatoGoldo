@@ -15,7 +15,7 @@ CXX           = g++
 DEFINES       = -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_SERIALPORT_LIB -DQT_NETWORK_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -m64 -pipe -std=c++11 -O2 -Wall -W -D_REENTRANT -fPIE $(DEFINES)
 CXXFLAGS      = -m64 -pipe -std=c++11 -O2 -Wall -W -D_REENTRANT -fPIE $(DEFINES)
-INCPATH       = -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I../../NeatoGoldo -I/usr/include/qt5 -I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtSerialPort -I/usr/include/qt5/QtNetwork -I/usr/include/qt5/QtGui -I/usr/include/qt5/QtCore -I. -I. -I.
+INCPATH       = -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I../../NeatoGoldo -I/usr/include/qt5 -I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtSerialPort -I/usr/include/qt5/QtNetwork -I/usr/include/qt5/QtGui -I/usr/include/qt5/QtCore -I. -I.
 LINK          = g++
 LFLAGS        = -m64 -Wl,-O1
 LIBS          = $(SUBLIBS) -L/usr/X11R6/lib64 -lQt5Widgets -L/usr/lib/x86_64-linux-gnu -lQt5SerialPort -ludev -lQt5Network -lQt5Gui -lQt5Core -lGL -lpthread 
@@ -160,7 +160,7 @@ first: all
 
 all: Makefile $(TARGET)
 
-$(TARGET): ui_C_Main.h ui_C_NApi_Command.h ui_C_NApi_Sensors.h $(OBJECTS)  
+$(TARGET):  $(OBJECTS)  
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
 Makefile: ../Neato.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64/qmake.conf /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
@@ -301,7 +301,7 @@ qmake_all: FORCE
 
 dist: 
 	@test -d .tmp/Neato1.0.0 || mkdir -p .tmp/Neato1.0.0
-	$(COPY_FILE) --parents $(SOURCES) $(DIST) .tmp/Neato1.0.0/ && $(COPY_FILE) --parents ../C_Main.h ../NeatoAPI/Constants.h ../NeatoAPI/Command/C_NApi_Command.h ../NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.h ../NeatoAPI/Sensors/C_NApi_Sensors.h ../NeatoAPI/SerialCom/C_NApi_SerialCom.h ../NeatoAPI/SerialCom/C_NApi_SerialCom_Protocol.h ../NeatoAPI/SerialCom/C_NApi_SerialCom_Settings.h ../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar.h ../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Protocol.h ../Tools/C_Tools_DataTable.h .tmp/Neato1.0.0/ && $(COPY_FILE) --parents ../main.cpp ../C_Main.cpp ../NeatoAPI/Command/C_NApi_Command.cpp ../NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.cpp ../NeatoAPI/Sensors/C_NApi_Sensors.cpp ../NeatoAPI/SerialCom/C_NApi_SerialCom.cpp ../NeatoAPI/SerialCom/C_NApi_SerialCom_Protocol.cpp ../NeatoAPI/SerialCom/C_NApi_SerialCom_Settings.cpp ../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar.cpp ../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Protocol.cpp ../Tools/C_Tools_DataTable.cpp .tmp/Neato1.0.0/ && $(COPY_FILE) --parents ../C_Main.ui ../NeatoAPI/Command/C_NApi_Command.ui ../NeatoAPI/Sensors/C_NApi_Sensors.ui .tmp/Neato1.0.0/ && (cd `dirname .tmp/Neato1.0.0` && $(TAR) Neato1.0.0.tar Neato1.0.0 && $(COMPRESS) Neato1.0.0.tar) && $(MOVE) `dirname .tmp/Neato1.0.0`/Neato1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/Neato1.0.0
+	$(COPY_FILE) --parents $(SOURCES) $(DIST) .tmp/Neato1.0.0/ && $(COPY_FILE) --parents ../C_Main.h ../NeatoAPI/Constants.h ../NeatoAPI/Command/C_NApi_Command.h ../NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.h ../NeatoAPI/Sensors/C_NApi_Sensors.h ../NeatoAPI/SerialCom/C_NApi_SerialCom.h ../NeatoAPI/SerialCom/C_NApi_SerialCom_Protocol.h ../NeatoAPI/SerialCom/C_NApi_SerialCom_Settings.h ../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar.h ../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Protocol.h ../Tools/C_Tools_DataTable.h .tmp/Neato1.0.0/ && $(COPY_FILE) --parents ../main.cpp ../C_Main.cpp ../NeatoAPI/Command/C_NApi_Command.cpp ../NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.cpp ../NeatoAPI/Sensors/C_NApi_Sensors.cpp ../NeatoAPI/SerialCom/C_NApi_SerialCom.cpp ../NeatoAPI/SerialCom/C_NApi_SerialCom_Protocol.cpp ../NeatoAPI/SerialCom/C_NApi_SerialCom_Settings.cpp ../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar.cpp ../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Protocol.cpp ../Tools/C_Tools_DataTable.cpp .tmp/Neato1.0.0/ && (cd `dirname .tmp/Neato1.0.0` && $(TAR) Neato1.0.0.tar Neato1.0.0 && $(COMPRESS) Neato1.0.0.tar) && $(MOVE) `dirname .tmp/Neato1.0.0`/Neato1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/Neato1.0.0
 
 
 clean:compiler_clean 
@@ -327,10 +327,9 @@ compiler_rcc_clean:
 compiler_moc_header_make_all: moc_C_Main.cpp moc_C_NApi_Command.cpp moc_C_NApi_Sensors.cpp moc_C_NApi_SerialCom.cpp moc_C_NApi_SerialCom_Protocol.cpp moc_C_NApi_SerialCom_Settings.cpp moc_C_NApi_SocketComRplidar.cpp moc_C_NApi_SocketComRplidar_Protocol.cpp
 compiler_moc_header_clean:
 	-$(DEL_FILE) moc_C_Main.cpp moc_C_NApi_Command.cpp moc_C_NApi_Sensors.cpp moc_C_NApi_SerialCom.cpp moc_C_NApi_SerialCom_Protocol.cpp moc_C_NApi_SerialCom_Settings.cpp moc_C_NApi_SocketComRplidar.cpp moc_C_NApi_SocketComRplidar_Protocol.cpp
-moc_C_Main.cpp: /usr/include/qt5/QtWidgets/QMainWindow \
-		/usr/include/qt5/QtWidgets/qmainwindow.h \
-		/usr/include/qt5/QtWidgets/qwidget.h \
-		/usr/include/qt5/QtGui/qwindowdefs.h \
+moc_C_Main.cpp: ../NeatoAPI/Command/C_NApi_Command.h \
+		/usr/include/qt5/QtCore/QTimer \
+		/usr/include/qt5/QtCore/qtimer.h \
 		/usr/include/qt5/QtCore/qglobal.h \
 		/usr/include/qt5/QtCore/qconfig.h \
 		/usr/include/qt5/QtCore/qfeatures.h \
@@ -367,11 +366,11 @@ moc_C_Main.cpp: /usr/include/qt5/QtWidgets/QMainWindow \
 		/usr/include/qt5/QtCore/qtypeinfo.h \
 		/usr/include/qt5/QtCore/qtypetraits.h \
 		/usr/include/qt5/QtCore/qsysinfo.h \
-		/usr/include/qt5/QtCore/qobjectdefs.h \
+		/usr/include/qt5/QtCore/qbasictimer.h \
 		/usr/include/qt5/QtCore/qnamespace.h \
-		/usr/include/qt5/QtCore/qobjectdefs_impl.h \
-		/usr/include/qt5/QtGui/qwindowdefs_win.h \
 		/usr/include/qt5/QtCore/qobject.h \
+		/usr/include/qt5/QtCore/qobjectdefs.h \
+		/usr/include/qt5/QtCore/qobjectdefs_impl.h \
 		/usr/include/qt5/QtCore/qstring.h \
 		/usr/include/qt5/QtCore/qchar.h \
 		/usr/include/qt5/QtCore/qbytearray.h \
@@ -388,73 +387,10 @@ moc_C_Main.cpp: /usr/include/qt5/QtWidgets/QMainWindow \
 		/usr/include/qt5/QtCore/qcontainerfwd.h \
 		/usr/include/qt5/QtCore/qisenum.h \
 		/usr/include/qt5/QtCore/qobject_impl.h \
-		/usr/include/qt5/QtCore/qmargins.h \
-		/usr/include/qt5/QtCore/qrect.h \
-		/usr/include/qt5/QtCore/qsize.h \
-		/usr/include/qt5/QtCore/qpoint.h \
-		/usr/include/qt5/QtGui/qpaintdevice.h \
-		/usr/include/qt5/QtGui/qpalette.h \
-		/usr/include/qt5/QtGui/qcolor.h \
-		/usr/include/qt5/QtGui/qrgb.h \
-		/usr/include/qt5/QtCore/qstringlist.h \
-		/usr/include/qt5/QtCore/qdatastream.h \
-		/usr/include/qt5/QtCore/qiodevice.h \
-		/usr/include/qt5/QtCore/qpair.h \
-		/usr/include/qt5/QtCore/qregexp.h \
-		/usr/include/qt5/QtCore/qstringmatcher.h \
-		/usr/include/qt5/QtGui/qbrush.h \
-		/usr/include/qt5/QtCore/qvector.h \
-		/usr/include/qt5/QtGui/qmatrix.h \
-		/usr/include/qt5/QtGui/qpolygon.h \
-		/usr/include/qt5/QtGui/qregion.h \
-		/usr/include/qt5/QtCore/qline.h \
-		/usr/include/qt5/QtGui/qtransform.h \
-		/usr/include/qt5/QtGui/qpainterpath.h \
-		/usr/include/qt5/QtGui/qimage.h \
-		/usr/include/qt5/QtGui/qpixmap.h \
-		/usr/include/qt5/QtCore/qsharedpointer.h \
-		/usr/include/qt5/QtCore/qshareddata.h \
-		/usr/include/qt5/QtCore/qsharedpointer_impl.h \
-		/usr/include/qt5/QtCore/qhash.h \
-		/usr/include/qt5/QtGui/qfont.h \
-		/usr/include/qt5/QtGui/qfontmetrics.h \
-		/usr/include/qt5/QtGui/qfontinfo.h \
-		/usr/include/qt5/QtWidgets/qsizepolicy.h \
-		/usr/include/qt5/QtGui/qcursor.h \
-		/usr/include/qt5/QtGui/qkeysequence.h \
-		/usr/include/qt5/QtGui/qevent.h \
-		/usr/include/qt5/QtCore/qvariant.h \
-		/usr/include/qt5/QtCore/qmap.h \
-		/usr/include/qt5/QtCore/qdebug.h \
-		/usr/include/qt5/QtCore/qtextstream.h \
-		/usr/include/qt5/QtCore/qlocale.h \
-		/usr/include/qt5/QtCore/qset.h \
-		/usr/include/qt5/QtCore/qcontiguouscache.h \
-		/usr/include/qt5/QtCore/qurl.h \
-		/usr/include/qt5/QtCore/qurlquery.h \
-		/usr/include/qt5/QtCore/qfile.h \
-		/usr/include/qt5/QtCore/qfiledevice.h \
-		/usr/include/qt5/QtGui/qvector2d.h \
-		/usr/include/qt5/QtGui/qtouchdevice.h \
-		/usr/include/qt5/QtWidgets/qtabwidget.h \
-		/usr/include/qt5/QtGui/qicon.h \
-		/usr/include/qt5/QtGui/QCloseEvent \
-		/usr/include/qt5/QtWidgets/QMessageBox \
-		/usr/include/qt5/QtWidgets/qmessagebox.h \
-		/usr/include/qt5/QtWidgets/qdialog.h \
-		ui_C_Main.h \
-		../NeatoAPI/Command/C_NApi_Command.h \
-		/usr/include/qt5/QtWidgets/QGraphicsScene \
-		/usr/include/qt5/QtWidgets/qgraphicsscene.h \
-		/usr/include/qt5/QtGui/qpen.h \
-		/usr/include/qt5/QtGui/QKeyEvent \
-		/usr/include/qt5/QtCore/QTimer \
-		/usr/include/qt5/QtCore/qtimer.h \
-		/usr/include/qt5/QtCore/qbasictimer.h \
-		/usr/include/qt5/QtWidgets/QWidget \
 		../NeatoAPI/SerialCom/C_NApi_SerialCom.h \
 		/usr/include/qt5/QtSerialPort/QSerialPort \
 		/usr/include/qt5/QtSerialPort/qserialport.h \
+		/usr/include/qt5/QtCore/qiodevice.h \
 		/usr/include/qt5/QtSerialPort/qserialportglobal.h \
 		/usr/include/qt5/QtCore/QThread \
 		/usr/include/qt5/QtCore/qthread.h \
@@ -465,30 +401,33 @@ moc_C_Main.cpp: /usr/include/qt5/QtWidgets/QMainWindow \
 		/usr/include/qt5/QtCore/QObject \
 		/usr/include/qt5/QtCore/QString \
 		/usr/include/qt5/QtCore/QStringList \
+		/usr/include/qt5/QtCore/qstringlist.h \
+		/usr/include/qt5/QtCore/qdatastream.h \
+		/usr/include/qt5/QtCore/qpair.h \
+		/usr/include/qt5/QtCore/qregexp.h \
+		/usr/include/qt5/QtCore/qstringmatcher.h \
 		../NeatoAPI/Constants.h \
 		../NeatoAPI/SerialCom/C_NApi_SerialCom_Settings.h \
 		/usr/include/qt5/QtSerialPort/QSerialPortInfo \
 		/usr/include/qt5/QtSerialPort/qserialportinfo.h \
-		ui_C_NApi_Command.h \
 		../NeatoAPI/Sensors/C_NApi_Sensors.h \
-		/usr/include/qt5/QtGui/QBrush \
-		/usr/include/qt5/QtWidgets/QGraphicsPixmapItem \
-		/usr/include/qt5/QtWidgets/qgraphicsitem.h \
-		/usr/include/qt5/QtGui/QImage \
-		/usr/include/qt5/QtGui/QPainter \
-		/usr/include/qt5/QtGui/qpainter.h \
-		/usr/include/qt5/QtGui/qtextoption.h \
-		/usr/include/qt5/QtGui/QPen \
-		/usr/include/qt5/QtWidgets/QScrollBar \
-		/usr/include/qt5/QtWidgets/qscrollbar.h \
-		/usr/include/qt5/QtWidgets/qabstractslider.h \
 		../NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.h \
 		../Tools/C_Tools_DataTable.h \
-		ui_C_NApi_Sensors.h \
 		../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar.h \
 		/usr/include/qt5/QtNetwork/QUdpSocket \
 		/usr/include/qt5/QtNetwork/qudpsocket.h \
 		/usr/include/qt5/QtNetwork/qabstractsocket.h \
+		/usr/include/qt5/QtCore/qdebug.h \
+		/usr/include/qt5/QtCore/qhash.h \
+		/usr/include/qt5/QtCore/qmap.h \
+		/usr/include/qt5/QtCore/qtextstream.h \
+		/usr/include/qt5/QtCore/qlocale.h \
+		/usr/include/qt5/QtCore/qvariant.h \
+		/usr/include/qt5/QtCore/qshareddata.h \
+		/usr/include/qt5/QtCore/qvector.h \
+		/usr/include/qt5/QtCore/qpoint.h \
+		/usr/include/qt5/QtCore/qset.h \
+		/usr/include/qt5/QtCore/qcontiguouscache.h \
 		/usr/include/qt5/QtNetwork/qhostaddress.h \
 		../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Protocol.h \
 		/usr/include/qt5/QtCore/QEventLoop \
@@ -496,10 +435,8 @@ moc_C_Main.cpp: /usr/include/qt5/QtWidgets/QMainWindow \
 		../C_Main.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) $(INCPATH) -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../C_Main.h -o moc_C_Main.cpp
 
-moc_C_NApi_Command.cpp: /usr/include/qt5/QtWidgets/QMainWindow \
-		/usr/include/qt5/QtWidgets/qmainwindow.h \
-		/usr/include/qt5/QtWidgets/qwidget.h \
-		/usr/include/qt5/QtGui/qwindowdefs.h \
+moc_C_NApi_Command.cpp: /usr/include/qt5/QtCore/QTimer \
+		/usr/include/qt5/QtCore/qtimer.h \
 		/usr/include/qt5/QtCore/qglobal.h \
 		/usr/include/qt5/QtCore/qconfig.h \
 		/usr/include/qt5/QtCore/qfeatures.h \
@@ -536,11 +473,11 @@ moc_C_NApi_Command.cpp: /usr/include/qt5/QtWidgets/QMainWindow \
 		/usr/include/qt5/QtCore/qtypeinfo.h \
 		/usr/include/qt5/QtCore/qtypetraits.h \
 		/usr/include/qt5/QtCore/qsysinfo.h \
-		/usr/include/qt5/QtCore/qobjectdefs.h \
+		/usr/include/qt5/QtCore/qbasictimer.h \
 		/usr/include/qt5/QtCore/qnamespace.h \
-		/usr/include/qt5/QtCore/qobjectdefs_impl.h \
-		/usr/include/qt5/QtGui/qwindowdefs_win.h \
 		/usr/include/qt5/QtCore/qobject.h \
+		/usr/include/qt5/QtCore/qobjectdefs.h \
+		/usr/include/qt5/QtCore/qobjectdefs_impl.h \
 		/usr/include/qt5/QtCore/qstring.h \
 		/usr/include/qt5/QtCore/qchar.h \
 		/usr/include/qt5/QtCore/qbytearray.h \
@@ -557,68 +494,10 @@ moc_C_NApi_Command.cpp: /usr/include/qt5/QtWidgets/QMainWindow \
 		/usr/include/qt5/QtCore/qcontainerfwd.h \
 		/usr/include/qt5/QtCore/qisenum.h \
 		/usr/include/qt5/QtCore/qobject_impl.h \
-		/usr/include/qt5/QtCore/qmargins.h \
-		/usr/include/qt5/QtCore/qrect.h \
-		/usr/include/qt5/QtCore/qsize.h \
-		/usr/include/qt5/QtCore/qpoint.h \
-		/usr/include/qt5/QtGui/qpaintdevice.h \
-		/usr/include/qt5/QtGui/qpalette.h \
-		/usr/include/qt5/QtGui/qcolor.h \
-		/usr/include/qt5/QtGui/qrgb.h \
-		/usr/include/qt5/QtCore/qstringlist.h \
-		/usr/include/qt5/QtCore/qdatastream.h \
-		/usr/include/qt5/QtCore/qiodevice.h \
-		/usr/include/qt5/QtCore/qpair.h \
-		/usr/include/qt5/QtCore/qregexp.h \
-		/usr/include/qt5/QtCore/qstringmatcher.h \
-		/usr/include/qt5/QtGui/qbrush.h \
-		/usr/include/qt5/QtCore/qvector.h \
-		/usr/include/qt5/QtGui/qmatrix.h \
-		/usr/include/qt5/QtGui/qpolygon.h \
-		/usr/include/qt5/QtGui/qregion.h \
-		/usr/include/qt5/QtCore/qline.h \
-		/usr/include/qt5/QtGui/qtransform.h \
-		/usr/include/qt5/QtGui/qpainterpath.h \
-		/usr/include/qt5/QtGui/qimage.h \
-		/usr/include/qt5/QtGui/qpixmap.h \
-		/usr/include/qt5/QtCore/qsharedpointer.h \
-		/usr/include/qt5/QtCore/qshareddata.h \
-		/usr/include/qt5/QtCore/qsharedpointer_impl.h \
-		/usr/include/qt5/QtCore/qhash.h \
-		/usr/include/qt5/QtGui/qfont.h \
-		/usr/include/qt5/QtGui/qfontmetrics.h \
-		/usr/include/qt5/QtGui/qfontinfo.h \
-		/usr/include/qt5/QtWidgets/qsizepolicy.h \
-		/usr/include/qt5/QtGui/qcursor.h \
-		/usr/include/qt5/QtGui/qkeysequence.h \
-		/usr/include/qt5/QtGui/qevent.h \
-		/usr/include/qt5/QtCore/qvariant.h \
-		/usr/include/qt5/QtCore/qmap.h \
-		/usr/include/qt5/QtCore/qdebug.h \
-		/usr/include/qt5/QtCore/qtextstream.h \
-		/usr/include/qt5/QtCore/qlocale.h \
-		/usr/include/qt5/QtCore/qset.h \
-		/usr/include/qt5/QtCore/qcontiguouscache.h \
-		/usr/include/qt5/QtCore/qurl.h \
-		/usr/include/qt5/QtCore/qurlquery.h \
-		/usr/include/qt5/QtCore/qfile.h \
-		/usr/include/qt5/QtCore/qfiledevice.h \
-		/usr/include/qt5/QtGui/qvector2d.h \
-		/usr/include/qt5/QtGui/qtouchdevice.h \
-		/usr/include/qt5/QtWidgets/qtabwidget.h \
-		/usr/include/qt5/QtGui/qicon.h \
-		/usr/include/qt5/QtGui/QCloseEvent \
-		/usr/include/qt5/QtWidgets/QGraphicsScene \
-		/usr/include/qt5/QtWidgets/qgraphicsscene.h \
-		/usr/include/qt5/QtGui/qpen.h \
-		/usr/include/qt5/QtGui/QKeyEvent \
-		/usr/include/qt5/QtCore/QTimer \
-		/usr/include/qt5/QtCore/qtimer.h \
-		/usr/include/qt5/QtCore/qbasictimer.h \
-		/usr/include/qt5/QtWidgets/QWidget \
 		../NeatoAPI/SerialCom/C_NApi_SerialCom.h \
 		/usr/include/qt5/QtSerialPort/QSerialPort \
 		/usr/include/qt5/QtSerialPort/qserialport.h \
+		/usr/include/qt5/QtCore/qiodevice.h \
 		/usr/include/qt5/QtSerialPort/qserialportglobal.h \
 		/usr/include/qt5/QtCore/QThread \
 		/usr/include/qt5/QtCore/qthread.h \
@@ -629,18 +508,20 @@ moc_C_NApi_Command.cpp: /usr/include/qt5/QtWidgets/QMainWindow \
 		/usr/include/qt5/QtCore/QObject \
 		/usr/include/qt5/QtCore/QString \
 		/usr/include/qt5/QtCore/QStringList \
+		/usr/include/qt5/QtCore/qstringlist.h \
+		/usr/include/qt5/QtCore/qdatastream.h \
+		/usr/include/qt5/QtCore/qpair.h \
+		/usr/include/qt5/QtCore/qregexp.h \
+		/usr/include/qt5/QtCore/qstringmatcher.h \
 		../NeatoAPI/Constants.h \
 		../NeatoAPI/SerialCom/C_NApi_SerialCom_Settings.h \
 		/usr/include/qt5/QtSerialPort/QSerialPortInfo \
 		/usr/include/qt5/QtSerialPort/qserialportinfo.h \
-		ui_C_NApi_Command.h \
 		../NeatoAPI/Command/C_NApi_Command.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) $(INCPATH) -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../NeatoAPI/Command/C_NApi_Command.h -o moc_C_NApi_Command.cpp
 
-moc_C_NApi_Sensors.cpp: /usr/include/qt5/QtWidgets/QMainWindow \
-		/usr/include/qt5/QtWidgets/qmainwindow.h \
-		/usr/include/qt5/QtWidgets/qwidget.h \
-		/usr/include/qt5/QtGui/qwindowdefs.h \
+moc_C_NApi_Sensors.cpp: /usr/include/qt5/QtCore/QTimer \
+		/usr/include/qt5/QtCore/qtimer.h \
 		/usr/include/qt5/QtCore/qglobal.h \
 		/usr/include/qt5/QtCore/qconfig.h \
 		/usr/include/qt5/QtCore/qfeatures.h \
@@ -677,11 +558,11 @@ moc_C_NApi_Sensors.cpp: /usr/include/qt5/QtWidgets/QMainWindow \
 		/usr/include/qt5/QtCore/qtypeinfo.h \
 		/usr/include/qt5/QtCore/qtypetraits.h \
 		/usr/include/qt5/QtCore/qsysinfo.h \
-		/usr/include/qt5/QtCore/qobjectdefs.h \
+		/usr/include/qt5/QtCore/qbasictimer.h \
 		/usr/include/qt5/QtCore/qnamespace.h \
-		/usr/include/qt5/QtCore/qobjectdefs_impl.h \
-		/usr/include/qt5/QtGui/qwindowdefs_win.h \
 		/usr/include/qt5/QtCore/qobject.h \
+		/usr/include/qt5/QtCore/qobjectdefs.h \
+		/usr/include/qt5/QtCore/qobjectdefs_impl.h \
 		/usr/include/qt5/QtCore/qstring.h \
 		/usr/include/qt5/QtCore/qchar.h \
 		/usr/include/qt5/QtCore/qbytearray.h \
@@ -698,79 +579,9 @@ moc_C_NApi_Sensors.cpp: /usr/include/qt5/QtWidgets/QMainWindow \
 		/usr/include/qt5/QtCore/qcontainerfwd.h \
 		/usr/include/qt5/QtCore/qisenum.h \
 		/usr/include/qt5/QtCore/qobject_impl.h \
-		/usr/include/qt5/QtCore/qmargins.h \
-		/usr/include/qt5/QtCore/qrect.h \
-		/usr/include/qt5/QtCore/qsize.h \
-		/usr/include/qt5/QtCore/qpoint.h \
-		/usr/include/qt5/QtGui/qpaintdevice.h \
-		/usr/include/qt5/QtGui/qpalette.h \
-		/usr/include/qt5/QtGui/qcolor.h \
-		/usr/include/qt5/QtGui/qrgb.h \
-		/usr/include/qt5/QtCore/qstringlist.h \
-		/usr/include/qt5/QtCore/qdatastream.h \
-		/usr/include/qt5/QtCore/qiodevice.h \
-		/usr/include/qt5/QtCore/qpair.h \
-		/usr/include/qt5/QtCore/qregexp.h \
-		/usr/include/qt5/QtCore/qstringmatcher.h \
-		/usr/include/qt5/QtGui/qbrush.h \
-		/usr/include/qt5/QtCore/qvector.h \
-		/usr/include/qt5/QtGui/qmatrix.h \
-		/usr/include/qt5/QtGui/qpolygon.h \
-		/usr/include/qt5/QtGui/qregion.h \
-		/usr/include/qt5/QtCore/qline.h \
-		/usr/include/qt5/QtGui/qtransform.h \
-		/usr/include/qt5/QtGui/qpainterpath.h \
-		/usr/include/qt5/QtGui/qimage.h \
-		/usr/include/qt5/QtGui/qpixmap.h \
-		/usr/include/qt5/QtCore/qsharedpointer.h \
-		/usr/include/qt5/QtCore/qshareddata.h \
-		/usr/include/qt5/QtCore/qsharedpointer_impl.h \
-		/usr/include/qt5/QtCore/qhash.h \
-		/usr/include/qt5/QtGui/qfont.h \
-		/usr/include/qt5/QtGui/qfontmetrics.h \
-		/usr/include/qt5/QtGui/qfontinfo.h \
-		/usr/include/qt5/QtWidgets/qsizepolicy.h \
-		/usr/include/qt5/QtGui/qcursor.h \
-		/usr/include/qt5/QtGui/qkeysequence.h \
-		/usr/include/qt5/QtGui/qevent.h \
-		/usr/include/qt5/QtCore/qvariant.h \
-		/usr/include/qt5/QtCore/qmap.h \
-		/usr/include/qt5/QtCore/qdebug.h \
-		/usr/include/qt5/QtCore/qtextstream.h \
-		/usr/include/qt5/QtCore/qlocale.h \
-		/usr/include/qt5/QtCore/qset.h \
-		/usr/include/qt5/QtCore/qcontiguouscache.h \
-		/usr/include/qt5/QtCore/qurl.h \
-		/usr/include/qt5/QtCore/qurlquery.h \
-		/usr/include/qt5/QtCore/qfile.h \
-		/usr/include/qt5/QtCore/qfiledevice.h \
-		/usr/include/qt5/QtGui/qvector2d.h \
-		/usr/include/qt5/QtGui/qtouchdevice.h \
-		/usr/include/qt5/QtWidgets/qtabwidget.h \
-		/usr/include/qt5/QtGui/qicon.h \
-		/usr/include/qt5/QtGui/QBrush \
-		/usr/include/qt5/QtGui/QCloseEvent \
-		/usr/include/qt5/QtWidgets/QGraphicsPixmapItem \
-		/usr/include/qt5/QtWidgets/qgraphicsitem.h \
-		/usr/include/qt5/QtWidgets/QGraphicsScene \
-		/usr/include/qt5/QtWidgets/qgraphicsscene.h \
-		/usr/include/qt5/QtGui/qpen.h \
-		/usr/include/qt5/QtGui/QImage \
-		/usr/include/qt5/QtGui/QPainter \
-		/usr/include/qt5/QtGui/qpainter.h \
-		/usr/include/qt5/QtGui/qtextoption.h \
-		/usr/include/qt5/QtGui/QPen \
-		/usr/include/qt5/QtWidgets/QScrollBar \
-		/usr/include/qt5/QtWidgets/qscrollbar.h \
-		/usr/include/qt5/QtWidgets/qabstractslider.h \
-		/usr/include/qt5/QtCore/QTimer \
-		/usr/include/qt5/QtCore/qtimer.h \
-		/usr/include/qt5/QtCore/qbasictimer.h \
-		/usr/include/qt5/QtWidgets/QWidget \
 		../NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.h \
 		../Tools/C_Tools_DataTable.h \
 		../NeatoAPI/Constants.h \
-		ui_C_NApi_Sensors.h \
 		../NeatoAPI/Sensors/C_NApi_Sensors.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) $(INCPATH) -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../NeatoAPI/Sensors/C_NApi_Sensors.h -o moc_C_NApi_Sensors.cpp
 
@@ -1167,25 +978,15 @@ moc_C_NApi_SocketComRplidar_Protocol.cpp: /usr/include/qt5/QtCore/QByteArray \
 
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
-compiler_uic_make_all: ui_C_Main.h ui_C_NApi_Command.h ui_C_NApi_Sensors.h
+compiler_uic_make_all:
 compiler_uic_clean:
-	-$(DEL_FILE) ui_C_Main.h ui_C_NApi_Command.h ui_C_NApi_Sensors.h
-ui_C_Main.h: ../C_Main.ui
-	/usr/lib/x86_64-linux-gnu/qt5/bin/uic ../C_Main.ui -o ui_C_Main.h
-
-ui_C_NApi_Command.h: ../NeatoAPI/Command/C_NApi_Command.ui
-	/usr/lib/x86_64-linux-gnu/qt5/bin/uic ../NeatoAPI/Command/C_NApi_Command.ui -o ui_C_NApi_Command.h
-
-ui_C_NApi_Sensors.h: ../NeatoAPI/Sensors/C_NApi_Sensors.ui
-	/usr/lib/x86_64-linux-gnu/qt5/bin/uic ../NeatoAPI/Sensors/C_NApi_Sensors.ui -o ui_C_NApi_Sensors.h
-
 compiler_yacc_decl_make_all:
 compiler_yacc_decl_clean:
 compiler_yacc_impl_make_all:
 compiler_yacc_impl_clean:
 compiler_lex_make_all:
 compiler_lex_clean:
-compiler_clean: compiler_moc_header_clean compiler_uic_clean 
+compiler_clean: compiler_moc_header_clean 
 
 ####### Compile
 
@@ -1304,24 +1105,10 @@ main.o: ../main.cpp /usr/include/qt5/QtWidgets/QApplication \
 		/usr/include/qt5/QtGui/qguiapplication.h \
 		/usr/include/qt5/QtGui/qinputmethod.h \
 		../C_Main.h \
-		/usr/include/qt5/QtWidgets/QMainWindow \
-		/usr/include/qt5/QtWidgets/qmainwindow.h \
-		/usr/include/qt5/QtWidgets/qtabwidget.h \
-		/usr/include/qt5/QtGui/qicon.h \
-		/usr/include/qt5/QtGui/QCloseEvent \
-		/usr/include/qt5/QtWidgets/QMessageBox \
-		/usr/include/qt5/QtWidgets/qmessagebox.h \
-		/usr/include/qt5/QtWidgets/qdialog.h \
-		ui_C_Main.h \
 		../NeatoAPI/Command/C_NApi_Command.h \
-		/usr/include/qt5/QtWidgets/QGraphicsScene \
-		/usr/include/qt5/QtWidgets/qgraphicsscene.h \
-		/usr/include/qt5/QtGui/qpen.h \
-		/usr/include/qt5/QtGui/QKeyEvent \
 		/usr/include/qt5/QtCore/QTimer \
 		/usr/include/qt5/QtCore/qtimer.h \
 		/usr/include/qt5/QtCore/qbasictimer.h \
-		/usr/include/qt5/QtWidgets/QWidget \
 		../NeatoAPI/SerialCom/C_NApi_SerialCom.h \
 		/usr/include/qt5/QtSerialPort/QSerialPort \
 		/usr/include/qt5/QtSerialPort/qserialport.h \
@@ -1339,22 +1126,9 @@ main.o: ../main.cpp /usr/include/qt5/QtWidgets/QApplication \
 		../NeatoAPI/SerialCom/C_NApi_SerialCom_Settings.h \
 		/usr/include/qt5/QtSerialPort/QSerialPortInfo \
 		/usr/include/qt5/QtSerialPort/qserialportinfo.h \
-		ui_C_NApi_Command.h \
 		../NeatoAPI/Sensors/C_NApi_Sensors.h \
-		/usr/include/qt5/QtGui/QBrush \
-		/usr/include/qt5/QtWidgets/QGraphicsPixmapItem \
-		/usr/include/qt5/QtWidgets/qgraphicsitem.h \
-		/usr/include/qt5/QtGui/QImage \
-		/usr/include/qt5/QtGui/QPainter \
-		/usr/include/qt5/QtGui/qpainter.h \
-		/usr/include/qt5/QtGui/qtextoption.h \
-		/usr/include/qt5/QtGui/QPen \
-		/usr/include/qt5/QtWidgets/QScrollBar \
-		/usr/include/qt5/QtWidgets/qscrollbar.h \
-		/usr/include/qt5/QtWidgets/qabstractslider.h \
 		../NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.h \
 		../Tools/C_Tools_DataTable.h \
-		ui_C_NApi_Sensors.h \
 		../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar.h \
 		/usr/include/qt5/QtNetwork/QUdpSocket \
 		/usr/include/qt5/QtNetwork/qudpsocket.h \
@@ -1365,10 +1139,9 @@ main.o: ../main.cpp /usr/include/qt5/QtWidgets/QApplication \
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../main.cpp
 
 C_Main.o: ../C_Main.cpp ../C_Main.h \
-		/usr/include/qt5/QtWidgets/QMainWindow \
-		/usr/include/qt5/QtWidgets/qmainwindow.h \
-		/usr/include/qt5/QtWidgets/qwidget.h \
-		/usr/include/qt5/QtGui/qwindowdefs.h \
+		../NeatoAPI/Command/C_NApi_Command.h \
+		/usr/include/qt5/QtCore/QTimer \
+		/usr/include/qt5/QtCore/qtimer.h \
 		/usr/include/qt5/QtCore/qglobal.h \
 		/usr/include/qt5/QtCore/qconfig.h \
 		/usr/include/qt5/QtCore/qfeatures.h \
@@ -1405,11 +1178,11 @@ C_Main.o: ../C_Main.cpp ../C_Main.h \
 		/usr/include/qt5/QtCore/qtypeinfo.h \
 		/usr/include/qt5/QtCore/qtypetraits.h \
 		/usr/include/qt5/QtCore/qsysinfo.h \
-		/usr/include/qt5/QtCore/qobjectdefs.h \
+		/usr/include/qt5/QtCore/qbasictimer.h \
 		/usr/include/qt5/QtCore/qnamespace.h \
-		/usr/include/qt5/QtCore/qobjectdefs_impl.h \
-		/usr/include/qt5/QtGui/qwindowdefs_win.h \
 		/usr/include/qt5/QtCore/qobject.h \
+		/usr/include/qt5/QtCore/qobjectdefs.h \
+		/usr/include/qt5/QtCore/qobjectdefs_impl.h \
 		/usr/include/qt5/QtCore/qstring.h \
 		/usr/include/qt5/QtCore/qchar.h \
 		/usr/include/qt5/QtCore/qbytearray.h \
@@ -1426,73 +1199,10 @@ C_Main.o: ../C_Main.cpp ../C_Main.h \
 		/usr/include/qt5/QtCore/qcontainerfwd.h \
 		/usr/include/qt5/QtCore/qisenum.h \
 		/usr/include/qt5/QtCore/qobject_impl.h \
-		/usr/include/qt5/QtCore/qmargins.h \
-		/usr/include/qt5/QtCore/qrect.h \
-		/usr/include/qt5/QtCore/qsize.h \
-		/usr/include/qt5/QtCore/qpoint.h \
-		/usr/include/qt5/QtGui/qpaintdevice.h \
-		/usr/include/qt5/QtGui/qpalette.h \
-		/usr/include/qt5/QtGui/qcolor.h \
-		/usr/include/qt5/QtGui/qrgb.h \
-		/usr/include/qt5/QtCore/qstringlist.h \
-		/usr/include/qt5/QtCore/qdatastream.h \
-		/usr/include/qt5/QtCore/qiodevice.h \
-		/usr/include/qt5/QtCore/qpair.h \
-		/usr/include/qt5/QtCore/qregexp.h \
-		/usr/include/qt5/QtCore/qstringmatcher.h \
-		/usr/include/qt5/QtGui/qbrush.h \
-		/usr/include/qt5/QtCore/qvector.h \
-		/usr/include/qt5/QtGui/qmatrix.h \
-		/usr/include/qt5/QtGui/qpolygon.h \
-		/usr/include/qt5/QtGui/qregion.h \
-		/usr/include/qt5/QtCore/qline.h \
-		/usr/include/qt5/QtGui/qtransform.h \
-		/usr/include/qt5/QtGui/qpainterpath.h \
-		/usr/include/qt5/QtGui/qimage.h \
-		/usr/include/qt5/QtGui/qpixmap.h \
-		/usr/include/qt5/QtCore/qsharedpointer.h \
-		/usr/include/qt5/QtCore/qshareddata.h \
-		/usr/include/qt5/QtCore/qsharedpointer_impl.h \
-		/usr/include/qt5/QtCore/qhash.h \
-		/usr/include/qt5/QtGui/qfont.h \
-		/usr/include/qt5/QtGui/qfontmetrics.h \
-		/usr/include/qt5/QtGui/qfontinfo.h \
-		/usr/include/qt5/QtWidgets/qsizepolicy.h \
-		/usr/include/qt5/QtGui/qcursor.h \
-		/usr/include/qt5/QtGui/qkeysequence.h \
-		/usr/include/qt5/QtGui/qevent.h \
-		/usr/include/qt5/QtCore/qvariant.h \
-		/usr/include/qt5/QtCore/qmap.h \
-		/usr/include/qt5/QtCore/qdebug.h \
-		/usr/include/qt5/QtCore/qtextstream.h \
-		/usr/include/qt5/QtCore/qlocale.h \
-		/usr/include/qt5/QtCore/qset.h \
-		/usr/include/qt5/QtCore/qcontiguouscache.h \
-		/usr/include/qt5/QtCore/qurl.h \
-		/usr/include/qt5/QtCore/qurlquery.h \
-		/usr/include/qt5/QtCore/qfile.h \
-		/usr/include/qt5/QtCore/qfiledevice.h \
-		/usr/include/qt5/QtGui/qvector2d.h \
-		/usr/include/qt5/QtGui/qtouchdevice.h \
-		/usr/include/qt5/QtWidgets/qtabwidget.h \
-		/usr/include/qt5/QtGui/qicon.h \
-		/usr/include/qt5/QtGui/QCloseEvent \
-		/usr/include/qt5/QtWidgets/QMessageBox \
-		/usr/include/qt5/QtWidgets/qmessagebox.h \
-		/usr/include/qt5/QtWidgets/qdialog.h \
-		ui_C_Main.h \
-		../NeatoAPI/Command/C_NApi_Command.h \
-		/usr/include/qt5/QtWidgets/QGraphicsScene \
-		/usr/include/qt5/QtWidgets/qgraphicsscene.h \
-		/usr/include/qt5/QtGui/qpen.h \
-		/usr/include/qt5/QtGui/QKeyEvent \
-		/usr/include/qt5/QtCore/QTimer \
-		/usr/include/qt5/QtCore/qtimer.h \
-		/usr/include/qt5/QtCore/qbasictimer.h \
-		/usr/include/qt5/QtWidgets/QWidget \
 		../NeatoAPI/SerialCom/C_NApi_SerialCom.h \
 		/usr/include/qt5/QtSerialPort/QSerialPort \
 		/usr/include/qt5/QtSerialPort/qserialport.h \
+		/usr/include/qt5/QtCore/qiodevice.h \
 		/usr/include/qt5/QtSerialPort/qserialportglobal.h \
 		/usr/include/qt5/QtCore/QThread \
 		/usr/include/qt5/QtCore/qthread.h \
@@ -1503,30 +1213,33 @@ C_Main.o: ../C_Main.cpp ../C_Main.h \
 		/usr/include/qt5/QtCore/QObject \
 		/usr/include/qt5/QtCore/QString \
 		/usr/include/qt5/QtCore/QStringList \
+		/usr/include/qt5/QtCore/qstringlist.h \
+		/usr/include/qt5/QtCore/qdatastream.h \
+		/usr/include/qt5/QtCore/qpair.h \
+		/usr/include/qt5/QtCore/qregexp.h \
+		/usr/include/qt5/QtCore/qstringmatcher.h \
 		../NeatoAPI/Constants.h \
 		../NeatoAPI/SerialCom/C_NApi_SerialCom_Settings.h \
 		/usr/include/qt5/QtSerialPort/QSerialPortInfo \
 		/usr/include/qt5/QtSerialPort/qserialportinfo.h \
-		ui_C_NApi_Command.h \
 		../NeatoAPI/Sensors/C_NApi_Sensors.h \
-		/usr/include/qt5/QtGui/QBrush \
-		/usr/include/qt5/QtWidgets/QGraphicsPixmapItem \
-		/usr/include/qt5/QtWidgets/qgraphicsitem.h \
-		/usr/include/qt5/QtGui/QImage \
-		/usr/include/qt5/QtGui/QPainter \
-		/usr/include/qt5/QtGui/qpainter.h \
-		/usr/include/qt5/QtGui/qtextoption.h \
-		/usr/include/qt5/QtGui/QPen \
-		/usr/include/qt5/QtWidgets/QScrollBar \
-		/usr/include/qt5/QtWidgets/qscrollbar.h \
-		/usr/include/qt5/QtWidgets/qabstractslider.h \
 		../NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.h \
 		../Tools/C_Tools_DataTable.h \
-		ui_C_NApi_Sensors.h \
 		../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar.h \
 		/usr/include/qt5/QtNetwork/QUdpSocket \
 		/usr/include/qt5/QtNetwork/qudpsocket.h \
 		/usr/include/qt5/QtNetwork/qabstractsocket.h \
+		/usr/include/qt5/QtCore/qdebug.h \
+		/usr/include/qt5/QtCore/qhash.h \
+		/usr/include/qt5/QtCore/qmap.h \
+		/usr/include/qt5/QtCore/qtextstream.h \
+		/usr/include/qt5/QtCore/qlocale.h \
+		/usr/include/qt5/QtCore/qvariant.h \
+		/usr/include/qt5/QtCore/qshareddata.h \
+		/usr/include/qt5/QtCore/qvector.h \
+		/usr/include/qt5/QtCore/qpoint.h \
+		/usr/include/qt5/QtCore/qset.h \
+		/usr/include/qt5/QtCore/qcontiguouscache.h \
 		/usr/include/qt5/QtNetwork/qhostaddress.h \
 		../NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Protocol.h \
 		/usr/include/qt5/QtCore/QEventLoop \
@@ -1535,10 +1248,8 @@ C_Main.o: ../C_Main.cpp ../C_Main.h \
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o C_Main.o ../C_Main.cpp
 
 C_NApi_Command.o: ../NeatoAPI/Command/C_NApi_Command.cpp ../NeatoAPI/Command/C_NApi_Command.h \
-		/usr/include/qt5/QtWidgets/QMainWindow \
-		/usr/include/qt5/QtWidgets/qmainwindow.h \
-		/usr/include/qt5/QtWidgets/qwidget.h \
-		/usr/include/qt5/QtGui/qwindowdefs.h \
+		/usr/include/qt5/QtCore/QTimer \
+		/usr/include/qt5/QtCore/qtimer.h \
 		/usr/include/qt5/QtCore/qglobal.h \
 		/usr/include/qt5/QtCore/qconfig.h \
 		/usr/include/qt5/QtCore/qfeatures.h \
@@ -1575,11 +1286,11 @@ C_NApi_Command.o: ../NeatoAPI/Command/C_NApi_Command.cpp ../NeatoAPI/Command/C_N
 		/usr/include/qt5/QtCore/qtypeinfo.h \
 		/usr/include/qt5/QtCore/qtypetraits.h \
 		/usr/include/qt5/QtCore/qsysinfo.h \
-		/usr/include/qt5/QtCore/qobjectdefs.h \
+		/usr/include/qt5/QtCore/qbasictimer.h \
 		/usr/include/qt5/QtCore/qnamespace.h \
-		/usr/include/qt5/QtCore/qobjectdefs_impl.h \
-		/usr/include/qt5/QtGui/qwindowdefs_win.h \
 		/usr/include/qt5/QtCore/qobject.h \
+		/usr/include/qt5/QtCore/qobjectdefs.h \
+		/usr/include/qt5/QtCore/qobjectdefs_impl.h \
 		/usr/include/qt5/QtCore/qstring.h \
 		/usr/include/qt5/QtCore/qchar.h \
 		/usr/include/qt5/QtCore/qbytearray.h \
@@ -1596,68 +1307,10 @@ C_NApi_Command.o: ../NeatoAPI/Command/C_NApi_Command.cpp ../NeatoAPI/Command/C_N
 		/usr/include/qt5/QtCore/qcontainerfwd.h \
 		/usr/include/qt5/QtCore/qisenum.h \
 		/usr/include/qt5/QtCore/qobject_impl.h \
-		/usr/include/qt5/QtCore/qmargins.h \
-		/usr/include/qt5/QtCore/qrect.h \
-		/usr/include/qt5/QtCore/qsize.h \
-		/usr/include/qt5/QtCore/qpoint.h \
-		/usr/include/qt5/QtGui/qpaintdevice.h \
-		/usr/include/qt5/QtGui/qpalette.h \
-		/usr/include/qt5/QtGui/qcolor.h \
-		/usr/include/qt5/QtGui/qrgb.h \
-		/usr/include/qt5/QtCore/qstringlist.h \
-		/usr/include/qt5/QtCore/qdatastream.h \
-		/usr/include/qt5/QtCore/qiodevice.h \
-		/usr/include/qt5/QtCore/qpair.h \
-		/usr/include/qt5/QtCore/qregexp.h \
-		/usr/include/qt5/QtCore/qstringmatcher.h \
-		/usr/include/qt5/QtGui/qbrush.h \
-		/usr/include/qt5/QtCore/qvector.h \
-		/usr/include/qt5/QtGui/qmatrix.h \
-		/usr/include/qt5/QtGui/qpolygon.h \
-		/usr/include/qt5/QtGui/qregion.h \
-		/usr/include/qt5/QtCore/qline.h \
-		/usr/include/qt5/QtGui/qtransform.h \
-		/usr/include/qt5/QtGui/qpainterpath.h \
-		/usr/include/qt5/QtGui/qimage.h \
-		/usr/include/qt5/QtGui/qpixmap.h \
-		/usr/include/qt5/QtCore/qsharedpointer.h \
-		/usr/include/qt5/QtCore/qshareddata.h \
-		/usr/include/qt5/QtCore/qsharedpointer_impl.h \
-		/usr/include/qt5/QtCore/qhash.h \
-		/usr/include/qt5/QtGui/qfont.h \
-		/usr/include/qt5/QtGui/qfontmetrics.h \
-		/usr/include/qt5/QtGui/qfontinfo.h \
-		/usr/include/qt5/QtWidgets/qsizepolicy.h \
-		/usr/include/qt5/QtGui/qcursor.h \
-		/usr/include/qt5/QtGui/qkeysequence.h \
-		/usr/include/qt5/QtGui/qevent.h \
-		/usr/include/qt5/QtCore/qvariant.h \
-		/usr/include/qt5/QtCore/qmap.h \
-		/usr/include/qt5/QtCore/qdebug.h \
-		/usr/include/qt5/QtCore/qtextstream.h \
-		/usr/include/qt5/QtCore/qlocale.h \
-		/usr/include/qt5/QtCore/qset.h \
-		/usr/include/qt5/QtCore/qcontiguouscache.h \
-		/usr/include/qt5/QtCore/qurl.h \
-		/usr/include/qt5/QtCore/qurlquery.h \
-		/usr/include/qt5/QtCore/qfile.h \
-		/usr/include/qt5/QtCore/qfiledevice.h \
-		/usr/include/qt5/QtGui/qvector2d.h \
-		/usr/include/qt5/QtGui/qtouchdevice.h \
-		/usr/include/qt5/QtWidgets/qtabwidget.h \
-		/usr/include/qt5/QtGui/qicon.h \
-		/usr/include/qt5/QtGui/QCloseEvent \
-		/usr/include/qt5/QtWidgets/QGraphicsScene \
-		/usr/include/qt5/QtWidgets/qgraphicsscene.h \
-		/usr/include/qt5/QtGui/qpen.h \
-		/usr/include/qt5/QtGui/QKeyEvent \
-		/usr/include/qt5/QtCore/QTimer \
-		/usr/include/qt5/QtCore/qtimer.h \
-		/usr/include/qt5/QtCore/qbasictimer.h \
-		/usr/include/qt5/QtWidgets/QWidget \
 		../NeatoAPI/SerialCom/C_NApi_SerialCom.h \
 		/usr/include/qt5/QtSerialPort/QSerialPort \
 		/usr/include/qt5/QtSerialPort/qserialport.h \
+		/usr/include/qt5/QtCore/qiodevice.h \
 		/usr/include/qt5/QtSerialPort/qserialportglobal.h \
 		/usr/include/qt5/QtCore/QThread \
 		/usr/include/qt5/QtCore/qthread.h \
@@ -1668,11 +1321,15 @@ C_NApi_Command.o: ../NeatoAPI/Command/C_NApi_Command.cpp ../NeatoAPI/Command/C_N
 		/usr/include/qt5/QtCore/QObject \
 		/usr/include/qt5/QtCore/QString \
 		/usr/include/qt5/QtCore/QStringList \
+		/usr/include/qt5/QtCore/qstringlist.h \
+		/usr/include/qt5/QtCore/qdatastream.h \
+		/usr/include/qt5/QtCore/qpair.h \
+		/usr/include/qt5/QtCore/qregexp.h \
+		/usr/include/qt5/QtCore/qstringmatcher.h \
 		../NeatoAPI/Constants.h \
 		../NeatoAPI/SerialCom/C_NApi_SerialCom_Settings.h \
 		/usr/include/qt5/QtSerialPort/QSerialPortInfo \
 		/usr/include/qt5/QtSerialPort/qserialportinfo.h \
-		ui_C_NApi_Command.h \
 		moc_C_NApi_Command.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o C_NApi_Command.o ../NeatoAPI/Command/C_NApi_Command.cpp
 
@@ -1681,10 +1338,8 @@ C_NApi_CoreSlam_8bppMap.o: ../NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.cpp ../N
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o C_NApi_CoreSlam_8bppMap.o ../NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.cpp
 
 C_NApi_Sensors.o: ../NeatoAPI/Sensors/C_NApi_Sensors.cpp ../NeatoAPI/Sensors/C_NApi_Sensors.h \
-		/usr/include/qt5/QtWidgets/QMainWindow \
-		/usr/include/qt5/QtWidgets/qmainwindow.h \
-		/usr/include/qt5/QtWidgets/qwidget.h \
-		/usr/include/qt5/QtGui/qwindowdefs.h \
+		/usr/include/qt5/QtCore/QTimer \
+		/usr/include/qt5/QtCore/qtimer.h \
 		/usr/include/qt5/QtCore/qglobal.h \
 		/usr/include/qt5/QtCore/qconfig.h \
 		/usr/include/qt5/QtCore/qfeatures.h \
@@ -1721,11 +1376,11 @@ C_NApi_Sensors.o: ../NeatoAPI/Sensors/C_NApi_Sensors.cpp ../NeatoAPI/Sensors/C_N
 		/usr/include/qt5/QtCore/qtypeinfo.h \
 		/usr/include/qt5/QtCore/qtypetraits.h \
 		/usr/include/qt5/QtCore/qsysinfo.h \
-		/usr/include/qt5/QtCore/qobjectdefs.h \
+		/usr/include/qt5/QtCore/qbasictimer.h \
 		/usr/include/qt5/QtCore/qnamespace.h \
-		/usr/include/qt5/QtCore/qobjectdefs_impl.h \
-		/usr/include/qt5/QtGui/qwindowdefs_win.h \
 		/usr/include/qt5/QtCore/qobject.h \
+		/usr/include/qt5/QtCore/qobjectdefs.h \
+		/usr/include/qt5/QtCore/qobjectdefs_impl.h \
 		/usr/include/qt5/QtCore/qstring.h \
 		/usr/include/qt5/QtCore/qchar.h \
 		/usr/include/qt5/QtCore/qbytearray.h \
@@ -1742,79 +1397,9 @@ C_NApi_Sensors.o: ../NeatoAPI/Sensors/C_NApi_Sensors.cpp ../NeatoAPI/Sensors/C_N
 		/usr/include/qt5/QtCore/qcontainerfwd.h \
 		/usr/include/qt5/QtCore/qisenum.h \
 		/usr/include/qt5/QtCore/qobject_impl.h \
-		/usr/include/qt5/QtCore/qmargins.h \
-		/usr/include/qt5/QtCore/qrect.h \
-		/usr/include/qt5/QtCore/qsize.h \
-		/usr/include/qt5/QtCore/qpoint.h \
-		/usr/include/qt5/QtGui/qpaintdevice.h \
-		/usr/include/qt5/QtGui/qpalette.h \
-		/usr/include/qt5/QtGui/qcolor.h \
-		/usr/include/qt5/QtGui/qrgb.h \
-		/usr/include/qt5/QtCore/qstringlist.h \
-		/usr/include/qt5/QtCore/qdatastream.h \
-		/usr/include/qt5/QtCore/qiodevice.h \
-		/usr/include/qt5/QtCore/qpair.h \
-		/usr/include/qt5/QtCore/qregexp.h \
-		/usr/include/qt5/QtCore/qstringmatcher.h \
-		/usr/include/qt5/QtGui/qbrush.h \
-		/usr/include/qt5/QtCore/qvector.h \
-		/usr/include/qt5/QtGui/qmatrix.h \
-		/usr/include/qt5/QtGui/qpolygon.h \
-		/usr/include/qt5/QtGui/qregion.h \
-		/usr/include/qt5/QtCore/qline.h \
-		/usr/include/qt5/QtGui/qtransform.h \
-		/usr/include/qt5/QtGui/qpainterpath.h \
-		/usr/include/qt5/QtGui/qimage.h \
-		/usr/include/qt5/QtGui/qpixmap.h \
-		/usr/include/qt5/QtCore/qsharedpointer.h \
-		/usr/include/qt5/QtCore/qshareddata.h \
-		/usr/include/qt5/QtCore/qsharedpointer_impl.h \
-		/usr/include/qt5/QtCore/qhash.h \
-		/usr/include/qt5/QtGui/qfont.h \
-		/usr/include/qt5/QtGui/qfontmetrics.h \
-		/usr/include/qt5/QtGui/qfontinfo.h \
-		/usr/include/qt5/QtWidgets/qsizepolicy.h \
-		/usr/include/qt5/QtGui/qcursor.h \
-		/usr/include/qt5/QtGui/qkeysequence.h \
-		/usr/include/qt5/QtGui/qevent.h \
-		/usr/include/qt5/QtCore/qvariant.h \
-		/usr/include/qt5/QtCore/qmap.h \
-		/usr/include/qt5/QtCore/qdebug.h \
-		/usr/include/qt5/QtCore/qtextstream.h \
-		/usr/include/qt5/QtCore/qlocale.h \
-		/usr/include/qt5/QtCore/qset.h \
-		/usr/include/qt5/QtCore/qcontiguouscache.h \
-		/usr/include/qt5/QtCore/qurl.h \
-		/usr/include/qt5/QtCore/qurlquery.h \
-		/usr/include/qt5/QtCore/qfile.h \
-		/usr/include/qt5/QtCore/qfiledevice.h \
-		/usr/include/qt5/QtGui/qvector2d.h \
-		/usr/include/qt5/QtGui/qtouchdevice.h \
-		/usr/include/qt5/QtWidgets/qtabwidget.h \
-		/usr/include/qt5/QtGui/qicon.h \
-		/usr/include/qt5/QtGui/QBrush \
-		/usr/include/qt5/QtGui/QCloseEvent \
-		/usr/include/qt5/QtWidgets/QGraphicsPixmapItem \
-		/usr/include/qt5/QtWidgets/qgraphicsitem.h \
-		/usr/include/qt5/QtWidgets/QGraphicsScene \
-		/usr/include/qt5/QtWidgets/qgraphicsscene.h \
-		/usr/include/qt5/QtGui/qpen.h \
-		/usr/include/qt5/QtGui/QImage \
-		/usr/include/qt5/QtGui/QPainter \
-		/usr/include/qt5/QtGui/qpainter.h \
-		/usr/include/qt5/QtGui/qtextoption.h \
-		/usr/include/qt5/QtGui/QPen \
-		/usr/include/qt5/QtWidgets/QScrollBar \
-		/usr/include/qt5/QtWidgets/qscrollbar.h \
-		/usr/include/qt5/QtWidgets/qabstractslider.h \
-		/usr/include/qt5/QtCore/QTimer \
-		/usr/include/qt5/QtCore/qtimer.h \
-		/usr/include/qt5/QtCore/qbasictimer.h \
-		/usr/include/qt5/QtWidgets/QWidget \
 		../NeatoAPI/CoreSlam/C_NApi_CoreSlam_8bppMap.h \
 		../Tools/C_Tools_DataTable.h \
 		../NeatoAPI/Constants.h \
-		ui_C_NApi_Sensors.h \
 		moc_C_NApi_Sensors.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o C_NApi_Sensors.o ../NeatoAPI/Sensors/C_NApi_Sensors.cpp
 

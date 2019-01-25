@@ -60,9 +60,3 @@ SOURCES += \
     NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar.cpp \
     NeatoAPI/SocketComRplidar/C_NApi_SocketComRplidar_Protocol.cpp \
     Tools/C_Tools_DataTable.cpp
-
-FORMS += \
-        C_Main.ui \
-    NeatoAPI/Command/C_NApi_Command.ui \
-    NeatoAPI/Sensors/C_NApi_Sensors.ui \
-
