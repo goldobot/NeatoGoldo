@@ -24,6 +24,7 @@ C_NApi_Sensors::C_NApi_Sensors()
     gettimeofday(&perf_t1, NULL);
     best_slam_delta_t = 0xffffffff;
     worst_slam_delta_t = 0;
+    mean_slam_delta_t = 0;
 #endif
 
 
@@ -77,6 +78,7 @@ void C_NApi_Sensors::SLOT_DecodeRplidarLidarData(uint16_t * ptMeasuresData)
     unsigned int my_delta_t = get_delta_time_usec(&perf_t1, &perf_t0);
     worst_slam_delta_t = (my_delta_t>worst_slam_delta_t)?my_delta_t:worst_slam_delta_t;
     best_slam_delta_t = (my_delta_t<best_slam_delta_t)?my_delta_t:best_slam_delta_t;
+    mean_slam_delta_t= (mean_slam_delta_t*m_count_rp+my_delta_t)/(m_count_rp+1);
 
     m_count_rp++;
     if(m_count_rp >= 10)
@@ -87,8 +89,20 @@ void C_NApi_Sensors::SLOT_DecodeRplidarLidarData(uint16_t * ptMeasuresData)
         float posY = m_ptCoreSlam->GET_currentPosY__mm();
         float posT = m_ptCoreSlam->GET_currentPosAngle__deg();
         printf (" *<X=%.1f mm, Y=%.1f mm, theta=%.1f °>\n", posX, posY, posT);
+        printf ("\n");
+
         printf (" worst_dt = %d usec\n", worst_slam_delta_t);
-        printf (" best_dt = %d usec\n\n", best_slam_delta_t);
+        printf (" best_dt = %d usec\n",  best_slam_delta_t);
+        printf (" mean_dt = %d usec\n",  mean_slam_delta_t);
+        printf ("\n");
+
+        best_slam_delta_t = 0xffffffff;
+        worst_slam_delta_t = 0;
+
+        m_ptCoreSlam->DisplayPerfGlobal();
+        m_ptCoreSlam->ResetPerfGlobal();
+        printf ("\n");
+        printf ("\n");
     }
 #endif
 }

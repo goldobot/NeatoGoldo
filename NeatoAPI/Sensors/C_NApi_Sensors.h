@@ -92,6 +92,7 @@ private:
     struct timeval perf_t1;
     unsigned int worst_slam_delta_t;
     unsigned int best_slam_delta_t;
+    unsigned int mean_slam_delta_t;
     unsigned int get_delta_time_usec(struct timeval *, struct timeval *);
 #endif
 

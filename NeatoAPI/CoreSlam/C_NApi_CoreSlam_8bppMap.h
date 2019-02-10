@@ -8,7 +8,45 @@
 #include "math.h"
 #include "string.h"
 
+#include <sys/time.h>
+
+#include <pthread.h>
+
 #include "Tools/C_Tools_DataTable.h"
+
+
+class C_NApi_CoreSlam_8bppMap_PerfAnalyser
+{
+public:
+    C_NApi_CoreSlam_8bppMap_PerfAnalyser(char *my_name, unsigned int perf_points);
+
+    ~C_NApi_CoreSlam_8bppMap_PerfAnalyser();
+
+    void ResetPerfGlobal();
+
+    void DisplayPerfGlobal();
+
+    void DisplayPerf(int i);
+
+    unsigned int get_delta_time_usec(struct timeval *t1, struct timeval *t0);
+
+    void set_t0();
+
+    void set_t_and_compute_perf(int i);
+
+private:
+    char *m_name;
+
+    unsigned int m_perf_points;
+    unsigned int m_count_ts;
+
+    struct timeval m_t[32];
+
+    unsigned int m_worst_dt[32];
+    unsigned int m_best_dt[32];
+    unsigned int m_mean_dt[32];
+};
+
 
 // Disable to allow debug and calibration purpose
 #define ENABLE_ESTIMATION
@@ -16,17 +54,24 @@
 // Disable boundary check to increase speed, but can be dangerous if map is too small
 #define ENABLE_MAP_BOUNDARIES_CHECK
 
+#define N_WORKER_THREADS 4
+#define N_WORKER_SLAVES (N_WORKER_THREADS-1)
+extern pthread_barrier_t g_start_barrier;
+extern pthread_barrier_t g_stop_barrier;
+
+
+enum enum_EstimationType
+{
+    NONE, THETA_ONLY, COMPLET_POS
+};
+
+
 // This enable SLAM based on LIDAR Data
 // For optimization on low power system, the algo use 8bpp map and lots of tweaks
 // The main position estimation can work with or without odometry
 class C_NApi_CoreSlam_8bppMap
 {
 public:
-    enum enum_EstimationType
-    {
-        NONE, THETA_ONLY, COMPLET_POS
-    };
-
     // Constructor
     C_NApi_CoreSlam_8bppMap(uint32_t globalMapSquareSize__mm, uint32_t lidarMinReliableMeasuredDist__mm, uint32_t lidarMaxReliableMeasuredDist__mm, uint32_t lidarMinDistToAddVirtualMeasures__mm, uint32_t maxNbOfVirtualMeasuresAtMaxDist);
 
@@ -180,11 +225,28 @@ public:
     // Do one step of sensor fusion
     void IntegrateNewSensorData(uint32_t * tabOfDistMeasures__mm, int offsetX__mm = 0, int offsetY__mm = 0, enum_EstimationType estimationType = COMPLET_POS);
 
+    void DisplayPerfGlobal();
+    void ResetPerfGlobal();
+
+    /* FIXME : TODO : temporary to be able to call it from slave thread procs */
+    void EstimateNewPosition_Kernel(enum_EstimationType estimationType, int tidx);
+
 private:
     // Semaphore mimic
     // But stay architecture independant
     volatile bool m_isBusy = false;
 
+    volatile bool m_isBusy_T[N_WORKER_THREADS];
+
+    uint64_t m_currentBestMatchingQualityValue[N_WORKER_THREADS];
+
+    double m_currentBestPosX__mm[N_WORKER_THREADS];
+    double m_currentBestPosY__mm[N_WORKER_THREADS];
+    double m_currentBestPosAngle__rad[N_WORKER_THREADS];
+
+    double m_currentDxErrValue__mm[N_WORKER_THREADS];
+    double m_currentDyErrValue__mm[N_WORKER_THREADS];
+    double m_currentDangleErrValue__rad[N_WORKER_THREADS];
 
     // GLOBAL MAP MODEL
     // ======================================================================================
@@ -245,6 +307,7 @@ private:
 
     // POSITION ERROR ESTIMATION MODEL
     // ======================================================================================
+#if 0 /* FIXME : DEBUG : valeurs TNG */
     static const uint32_t NB_OF_VALUES_OF_DX_ERR_MODEL = 21;
     const double m_tabOfDxErrModel__mm[NB_OF_VALUES_OF_DX_ERR_MODEL] =
     {
@@ -270,6 +333,33 @@ private:
         0.1, 0.2 , 0.3, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 14.0,
         -0.1, -0.2 , -0.3, -0.5, -1.0, -1.5, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0, -8.0, -10.0, -12.0, -14.0
     };
+#else /* FIXME : DEBUG : valeurs Goldo */
+    static const uint32_t NB_OF_VALUES_OF_DX_ERR_MODEL = 11;
+    const double m_tabOfDxErrModel__mm[NB_OF_VALUES_OF_DX_ERR_MODEL] =
+    {
+        0.0,
+        1.0, 2.5, 5.0, 7.5, 10.0, 
+        -1.0, -2.5, -5.0, -7.5, -10.0, 
+    };
+
+    static const uint32_t NB_OF_VALUES_OF_DY_ERR_MODEL = 11;
+    const double m_tabOfDyErrModel__mm[NB_OF_VALUES_OF_DY_ERR_MODEL] =
+    {
+        0.0,
+        1.0, 2.5, 5.0, 7.5, 10.0, 
+        -1.0, -2.5, -5.0, -7.5, -10.0, 
+    };
+
+    static const uint32_t NB_OF_VALUES_OF_DANGLE_ERR_MODEL = 33;
+    // Warning, for convenient, the values are in deg
+    // But they will be converted to rad at the beginning
+    double m_tabOfDAngleErrModel__rad[NB_OF_VALUES_OF_DANGLE_ERR_MODEL]=
+    {
+        0.0,
+        0.1, 0.2 , 0.3, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 14.0,
+        -0.1, -0.2 , -0.3, -0.5, -1.0, -1.5, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0, -8.0, -10.0, -12.0, -14.0
+    };
+#endif
 
     // Precomputed cos and sin value of the Angle model
     double m_opti_cached_tabOfCosOfAngleErrModel[NB_OF_VALUES_OF_DANGLE_ERR_MODEL] = {0.0};
@@ -389,7 +479,7 @@ private:
     // ======================================================================================
 
     // Estimate the new position
-    inline bool EstimateNewPosition(enum_EstimationType estimationType);
+    bool EstimateNewPosition(enum_EstimationType estimationType);
 
     // Prepare internal data using the new incoming Lidar data
     inline bool ProcessLidarData(int offsetX__mm = 0, int offsetY__mm = 0);
@@ -398,11 +488,19 @@ private:
     // The "Normal" function does the cached data
     // The "Opti" function reuse the cached data
     // Be carrefull when using the Opti function
-    uint64_t ComputeMatching(double xInMm, double yInMm, double preComputedCos, double preComputedSin);
-    inline uint64_t Opti_ComputeMatching(double xInMm, double yInMm);
+    uint64_t ComputeMatching(double xInMm, double yInMm, double preComputedCos, double preComputedSin, double *thread_cache_X, double *thread_cache_Y);
+    inline uint64_t Opti_ComputeMatching(double xInMm, double yInMm, double *thread_cache_X, double *thread_cache_Y);
     // Cached data for ComputeMatching(...)
-    double m_opti_computeMatching_cached_X[MAX_NB_OF_ADDED_VIRTUAL_MEASURES * LIDAR_NB_OF_MEASURES_PER_ROTATION] = {0.0};
-    double m_opti_computeMatching_cached_Y[MAX_NB_OF_ADDED_VIRTUAL_MEASURES * LIDAR_NB_OF_MEASURES_PER_ROTATION] = {0.0};
+    // FDE : one cache per worker thread
+    /* FIXME : TODO : sanitize.. */
+    double m_opti_computeMatching_cached_X_T0[MAX_NB_OF_ADDED_VIRTUAL_MEASURES * LIDAR_NB_OF_MEASURES_PER_ROTATION] = {0.0};
+    double m_opti_computeMatching_cached_Y_T0[MAX_NB_OF_ADDED_VIRTUAL_MEASURES * LIDAR_NB_OF_MEASURES_PER_ROTATION] = {0.0};
+    double m_opti_computeMatching_cached_X_T1[MAX_NB_OF_ADDED_VIRTUAL_MEASURES * LIDAR_NB_OF_MEASURES_PER_ROTATION] = {0.0};
+    double m_opti_computeMatching_cached_Y_T1[MAX_NB_OF_ADDED_VIRTUAL_MEASURES * LIDAR_NB_OF_MEASURES_PER_ROTATION] = {0.0};
+    double m_opti_computeMatching_cached_X_T2[MAX_NB_OF_ADDED_VIRTUAL_MEASURES * LIDAR_NB_OF_MEASURES_PER_ROTATION] = {0.0};
+    double m_opti_computeMatching_cached_Y_T2[MAX_NB_OF_ADDED_VIRTUAL_MEASURES * LIDAR_NB_OF_MEASURES_PER_ROTATION] = {0.0};
+    double m_opti_computeMatching_cached_X_T3[MAX_NB_OF_ADDED_VIRTUAL_MEASURES * LIDAR_NB_OF_MEASURES_PER_ROTATION] = {0.0};
+    double m_opti_computeMatching_cached_Y_T3[MAX_NB_OF_ADDED_VIRTUAL_MEASURES * LIDAR_NB_OF_MEASURES_PER_ROTATION] = {0.0};
 
     // Update the global map with the Lidar data
     inline void UpdateMap();
@@ -432,6 +530,10 @@ private:
 
     // Statistic purpose : Nb of map computation pass since last time the value is requested
     uint32_t m_nbMapUpdatePassSinceLastRead = 0;
+
+    int m_perf_analysers;
+    C_NApi_CoreSlam_8bppMap_PerfAnalyser *m_perf_stat[16];
 };
+
 
 #endif // C_NAPI_CORESLAM_8BPP_MAP_H

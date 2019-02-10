@@ -1,5 +1,73 @@
 #include "C_NApi_CoreSlam_8bppMap.h"
 
+bool g_coreslam_ready = false;
+C_NApi_CoreSlam_8bppMap *g_coreslam_obj = NULL;
+enum_EstimationType g_estimationType = COMPLET_POS;
+
+void *g_slave_proc1(void*)
+{
+    printf ("g_slave_proc1()..\n");
+
+    while ((!g_coreslam_ready) && (g_coreslam_obj==NULL)) {
+        pthread_yield();
+    }
+
+    printf ("g_slave_proc1(): coreslam_ready\n");
+
+    while (true) {
+        pthread_barrier_wait(&g_start_barrier);
+
+        g_coreslam_obj->EstimateNewPosition_Kernel(g_estimationType, /*tidx=*/ 1);
+
+        pthread_barrier_wait(&g_stop_barrier);
+    }
+
+    return NULL;
+}
+
+void *g_slave_proc2(void*)
+{
+    printf ("g_slave_proc2()..\n");
+
+    while ((!g_coreslam_ready) && (g_coreslam_obj==NULL)) {
+        pthread_yield();
+    }
+
+    printf ("g_slave_proc2(): coreslam_ready\n");
+
+    while (true) {
+        pthread_barrier_wait(&g_start_barrier);
+
+        g_coreslam_obj->EstimateNewPosition_Kernel(g_estimationType, /*tidx=*/ 2);
+
+        pthread_barrier_wait(&g_stop_barrier);
+    }
+
+    return NULL;
+}
+
+void *g_slave_proc3(void*)
+{
+    printf ("g_slave_proc3()..\n");
+
+    while ((!g_coreslam_ready) && (g_coreslam_obj==NULL)) {
+        pthread_yield();
+    }
+
+    printf ("g_slave_proc3(): coreslam_ready\n");
+
+    while (true) {
+        pthread_barrier_wait(&g_start_barrier);
+
+        g_coreslam_obj->EstimateNewPosition_Kernel(g_estimationType, /*tidx=*/ 3);
+
+        pthread_barrier_wait(&g_stop_barrier);
+    }
+
+    return NULL;
+}
+
+
 C_NApi_CoreSlam_8bppMap::C_NApi_CoreSlam_8bppMap(uint32_t globalMapSquareSize__mm, uint32_t lidarMinReliableMeasuredDist__mm, uint32_t lidarMaxReliableMeasuredDist__mm, uint32_t lidarMinDistToAddVirtualMeasures__mm, uint32_t maxNbOfVirtualMeasuresAtMaxDist)
 {
     // Store the map size
@@ -16,7 +84,7 @@ C_NApi_CoreSlam_8bppMap::C_NApi_CoreSlam_8bppMap(uint32_t globalMapSquareSize__m
 
 
     // Precompute data for Angle err model
-    for (int32_t i = 0; i < NB_OF_VALUES_OF_DANGLE_ERR_MODEL; i++)
+    for (int32_t i = 0; i < (int32_t)NB_OF_VALUES_OF_DANGLE_ERR_MODEL; i++)
     {
         m_tabOfDAngleErrModel__rad[i] = m_tabOfDAngleErrModel__rad[i] * CONV_DEG_2_RAD;
         m_opti_cached_tabOfCosOfAngleErrModel[i] =  cos(m_tabOfDAngleErrModel__rad[i]);
@@ -37,7 +105,16 @@ C_NApi_CoreSlam_8bppMap::C_NApi_CoreSlam_8bppMap(uint32_t globalMapSquareSize__m
 
     m_lidarDistFromMinDistToAddVirtualMeasuresToMaxReliableMeasuredDist__mm = m_lidarMaxReliableMeasuredDist__mm - m_lidarMinDistToAddVirtualMeasures__mm;
 
+    m_perf_analysers = 3;
+    for (int i=0; i<16; i++) m_perf_stat[i] = NULL;
+    m_perf_stat[0] = new C_NApi_CoreSlam_8bppMap_PerfAnalyser((char *)"ProcessLidarData()",2);
+    m_perf_stat[1] = new C_NApi_CoreSlam_8bppMap_PerfAnalyser((char *)"EstimateNewPosition()",2);
+    m_perf_stat[2] = new C_NApi_CoreSlam_8bppMap_PerfAnalyser((char *)"UpdateMap()",2);
+
     Reset();
+
+    g_coreslam_obj = this;
+    g_coreslam_ready = true;
 }
 
 C_NApi_CoreSlam_8bppMap::~C_NApi_CoreSlam_8bppMap()
@@ -46,11 +123,17 @@ C_NApi_CoreSlam_8bppMap::~C_NApi_CoreSlam_8bppMap()
     free(m_ptGlobalMap8bpp);
     free(m_ptThnlGlobalMap8bpp_0);
     free(m_ptThnlGlobalMap8bpp_1);
+
+    delete m_perf_stat[0];
+    delete m_perf_stat[1];
+    delete m_perf_stat[2];
 }
 
 
 void C_NApi_CoreSlam_8bppMap::Reset()
 {
+    for (int i=0; i<N_WORKER_THREADS; i++) m_isBusy_T[i] = false;
+
     // Init the probability map
     m_ptGlobalMap8bpp = C_Tools_DataTable::AllocArrayU8(m_opti_globalMapSquareSize__pixel, m_opti_globalMapSquareSize__pixel,  INIT_MAP_PIXEL_VALUE);
     m_ptThnlGlobalMap8bpp_0 = C_Tools_DataTable::AllocArrayU8(m_opti_thnlGlobalMapSquareSize__pixel, m_opti_thnlGlobalMapSquareSize__pixel,  INIT_MAP_PIXEL_VALUE);
@@ -117,6 +200,8 @@ void C_NApi_CoreSlam_8bppMap::Reset()
 
     // Reset statistics
     m_nbMapUpdatePassSinceLastRead = 0;
+
+    ResetPerfGlobal();
 }
 
 void C_NApi_CoreSlam_8bppMap::IntegrateNewSensorData(uint32_t * tabOfDistMeasures__mm, int offsetX__mm, int offsetY__mm, enum_EstimationType estimationType)
@@ -140,7 +225,8 @@ void C_NApi_CoreSlam_8bppMap::IntegrateNewSensorData(uint32_t * tabOfDistMeasure
 
         // Update the map with new sensor data
         UpdateMap();
-        UpdateThumbnailMap();
+        /* FIXME : DEBUG */
+        //UpdateThumbnailMap();
 
         // Statistic purpose : Nb of map computation pass since last time the value is requested
         m_nbMapUpdatePassSinceLastRead++;
@@ -150,10 +236,40 @@ void C_NApi_CoreSlam_8bppMap::IntegrateNewSensorData(uint32_t * tabOfDistMeasure
     m_isBusy = false;
 }
 
-bool C_NApi_CoreSlam_8bppMap::EstimateNewPosition(enum_EstimationType estimationType)
+
+void C_NApi_CoreSlam_8bppMap::EstimateNewPosition_Kernel(enum_EstimationType estimationType, int tidx)
 {
-    // No need to estimate position
-    if(estimationType == NONE) return true;
+    int32_t angle_min_idx = 0;
+    int32_t angle_max_idx = 0;
+    double *thread_cache_X = NULL;
+    double *thread_cache_Y = NULL;
+
+    switch (tidx) {
+    case 0:
+        angle_min_idx = 0;
+        angle_max_idx = 9;
+        thread_cache_X = m_opti_computeMatching_cached_X_T0;
+        thread_cache_Y = m_opti_computeMatching_cached_Y_T0;
+        break;
+    case 1:
+        angle_min_idx = 9;
+        angle_max_idx = 17;
+        thread_cache_X = m_opti_computeMatching_cached_X_T1;
+        thread_cache_Y = m_opti_computeMatching_cached_Y_T1;
+        break;
+    case 2:
+        angle_min_idx = 17;
+        angle_max_idx = 25;
+        thread_cache_X = m_opti_computeMatching_cached_X_T2;
+        thread_cache_Y = m_opti_computeMatching_cached_Y_T2;
+        break;
+    case 3:
+        angle_min_idx = 25;
+        angle_max_idx = 33;
+        thread_cache_X = m_opti_computeMatching_cached_X_T3;
+        thread_cache_Y = m_opti_computeMatching_cached_Y_T3;
+        break;
+    };
 
     // Position to check
     double checkingPosX__mm = 0.0;
@@ -172,6 +288,9 @@ bool C_NApi_CoreSlam_8bppMap::EstimateNewPosition(enum_EstimationType estimation
     double currentBestPosY__mm = 0.0;
     double currentBestPosAngle__rad = 0.0;
 
+    double currentDxErrValue__mm = 0.0;
+    double currentDyErrValue__mm = 0.0;
+    double currentDangleErrValue__rad = 0.0;
 
     int32_t nbOfValuesOfDxErrModel = NB_OF_VALUES_OF_DX_ERR_MODEL;
     int32_t nbOfValuesOfDyErrModel = NB_OF_VALUES_OF_DY_ERR_MODEL;
@@ -190,7 +309,7 @@ bool C_NApi_CoreSlam_8bppMap::EstimateNewPosition(enum_EstimationType estimation
     double * ptAngleErrModel__rad = (double *) m_tabOfDAngleErrModel__rad;
 
 #ifdef ENABLE_ESTIMATION
-    for (int32_t i = 0; i < NB_OF_VALUES_OF_DANGLE_ERR_MODEL; i++)
+    for (int32_t i = angle_min_idx; i < angle_max_idx; i++)
 #else
     for (int32_t i = 0; i < 1; i++)
 #endif
@@ -228,12 +347,12 @@ bool C_NApi_CoreSlam_8bppMap::EstimateNewPosition(enum_EstimationType estimation
 
                 if (angleErrModelValueChanged)
                 {
-                    matchingQualityValue = ComputeMatching(checkingPosX__mm, checkingPosY__mm, m_opti_currentPosAngle__cos * angleErrModel__cos - m_opti_currentPosAngle__sin * angleErrModel__sin, m_opti_currentPosAngle__sin * angleErrModel__cos + m_opti_currentPosAngle__cos * angleErrModel__sin);
+                    matchingQualityValue = ComputeMatching(checkingPosX__mm, checkingPosY__mm, m_opti_currentPosAngle__cos * angleErrModel__cos - m_opti_currentPosAngle__sin * angleErrModel__sin, m_opti_currentPosAngle__sin * angleErrModel__cos + m_opti_currentPosAngle__cos * angleErrModel__sin, thread_cache_X, thread_cache_Y);
                     angleErrModelValueChanged = false;
                 }
                 else
                 {
-                    matchingQualityValue = Opti_ComputeMatching(checkingPosX__mm, checkingPosY__mm);
+                    matchingQualityValue = Opti_ComputeMatching(checkingPosX__mm, checkingPosY__mm, thread_cache_X, thread_cache_Y);
                 }
 
                 // Best position found
@@ -247,9 +366,9 @@ bool C_NApi_CoreSlam_8bppMap::EstimateNewPosition(enum_EstimationType estimation
                     currentBestPosAngle__rad = m_currentPosAngle__rad + (*ptAngleErrModel__rad);
 
                     // Debug purpose only
-                    m_appliedDxErrValue__mm = (*ptDxErrModel__mm);
-                    m_appliedDyErrValue__mm = (*ptDyErrModel__mm);
-                    m_appliedDangleErrValue__rad = (*ptAngleErrModel__rad);
+                    currentDxErrValue__mm = (*ptDxErrModel__mm);
+                    currentDyErrValue__mm = (*ptDyErrModel__mm);
+                    currentDangleErrValue__rad = (*ptAngleErrModel__rad);
                 }
 
                 ptDyErrModel__mm++;
@@ -265,18 +384,79 @@ bool C_NApi_CoreSlam_8bppMap::EstimateNewPosition(enum_EstimationType estimation
     while (currentBestPosAngle__rad > PI) currentBestPosAngle__rad -= PI_x_2;
     while (currentBestPosAngle__rad < MINUS_PI) currentBestPosAngle__rad += PI_x_2;
 
+    m_currentBestMatchingQualityValue[tidx] = currentBestMatchingQualityValue;
+
+    m_currentBestPosX__mm[tidx] = currentBestPosX__mm;
+    m_currentBestPosY__mm[tidx] = currentBestPosY__mm;
+    m_currentBestPosAngle__rad[tidx] = currentBestPosAngle__rad;
+
+    m_currentDxErrValue__mm[tidx] = currentDxErrValue__mm;
+    m_currentDyErrValue__mm[tidx] = currentDyErrValue__mm;
+    m_currentDangleErrValue__rad[tidx] = currentDangleErrValue__rad;
+
+    m_isBusy_T[tidx] = false;
+}
+
+
+bool C_NApi_CoreSlam_8bppMap::EstimateNewPosition(enum_EstimationType estimationType)
+{
+    m_perf_stat[1]->set_t0();
+
+    g_estimationType = estimationType;
+
+    // No need to estimate position
+    if(estimationType == NONE) return true;
+
+
+    /* FIXME : TODO : improve implementation of parallelism .. */
+    m_isBusy_T[0] = true;
+    m_isBusy_T[1] = true;
+    m_isBusy_T[2] = true;
+    m_isBusy_T[3] = true;
+
+    pthread_barrier_wait(&g_start_barrier);
+
+    EstimateNewPosition_Kernel(estimationType, /*tidx=*/ 0);
+
+    /* bariere synchro.. */
+#if 0 /* FIXME : TODO : usefull??.. */
+    while (m_isBusy_T[1] || m_isBusy_T[2] || m_isBusy_T[3]) {
+        pthread_yield();
+    }
+#endif
+    pthread_barrier_wait(&g_stop_barrier);
+
+    /* choix du winner global.. */
+    int w1, w2;
+
+    if (m_currentBestMatchingQualityValue[0] < m_currentBestMatchingQualityValue[1]) {
+        w1 = 0;
+    } else {
+        w1 = 1;
+    }
+
+    if (m_currentBestMatchingQualityValue[2] < m_currentBestMatchingQualityValue[3]) {
+        w2 = 2;
+    } else {
+        w2 = 3;
+    }
+
+    if (m_currentBestMatchingQualityValue[w2] < m_currentBestMatchingQualityValue[w1]) {
+        w1 = w2;
+    }
+
     // Store the best of all position found
-    m_currentPosX__mm = currentBestPosX__mm;
+    m_currentPosX__mm = m_currentBestPosX__mm[w1];
     m_currentPosX__pixel = Opti_round(m_currentPosX__mm * CONV_MM_2_PIXEL);
     m_currentThnlPosX__pixel = Opti_round(m_currentPosX__mm * THNL_CONV_MM_2_PIXEL);
 
-    m_currentPosY__mm = currentBestPosY__mm;
+    m_currentPosY__mm = m_currentBestPosY__mm[w1];
     m_currentPosY__pixel = Opti_round(m_currentPosY__mm * CONV_MM_2_PIXEL);
     m_currentThnlPosY__pixel = Opti_round(m_currentPosY__mm * THNL_CONV_MM_2_PIXEL);
 
-    m_currentPosAngle__rad = currentBestPosAngle__rad;
-    m_opti_currentPosAngle__cos = cos(currentBestPosAngle__rad);
-    m_opti_currentPosAngle__sin = sin(currentBestPosAngle__rad);
+    m_currentPosAngle__rad = m_currentBestPosAngle__rad[w1];
+    m_opti_currentPosAngle__cos = cos(m_currentBestPosAngle__rad[w1]);
+    m_opti_currentPosAngle__sin = sin(m_currentBestPosAngle__rad[w1]);
 
     // Store the value for average computation
     m_savePosX__mm[m_nextSavePosIndex] = m_currentPosX__mm;
@@ -304,11 +484,20 @@ bool C_NApi_CoreSlam_8bppMap::EstimateNewPosition(enum_EstimationType estimation
     m_moyPosX__pixel = sumX__pixel / NB_POINTS_FOR_AVERAGE;
     m_moyPosY__pixel = sumY__pixel / NB_POINTS_FOR_AVERAGE;
 
+    // Debug purpose only
+    m_appliedDxErrValue__mm = m_currentDxErrValue__mm[w1];
+    m_appliedDyErrValue__mm = m_currentDyErrValue__mm[w1];
+    m_appliedDangleErrValue__rad = m_currentDangleErrValue__rad[w1];
+
+    m_perf_stat[1]->set_t_and_compute_perf(1);
+
     return true;
 }
 
 bool C_NApi_CoreSlam_8bppMap::ProcessLidarData(int offsetX__mm, int offsetY__mm)
 {
+    m_perf_stat[0]->set_t0();
+
     uint32_t nbOfPoints = 0;
 
     // Access lidar data
@@ -408,6 +597,8 @@ bool C_NApi_CoreSlam_8bppMap::ProcessLidarData(int offsetX__mm, int offsetY__mm)
     m_nbOfMeasuresTakenIntoAccount = nbOfPoints;
     m_opti_nbOfMeasuresTakenIntoAccount_minus1 = m_nbOfMeasuresTakenIntoAccount - 1;
 
+    m_perf_stat[0]->set_t_and_compute_perf(1);
+
     // Final status, only OK if enough usable points
     return (nbOfPoints >= MIN_NB_OF_POINTS_TO_ALLOW_POS_ESTIMATION);
 }
@@ -415,7 +606,7 @@ bool C_NApi_CoreSlam_8bppMap::ProcessLidarData(int offsetX__mm, int offsetY__mm)
 // Compute the matching quality of the detected points set
 // For each detected point, read on the probability map if the point is probable or not
 // Smallest is the best
-uint64_t C_NApi_CoreSlam_8bppMap::ComputeMatching(double posX__mm, double posY__mm, double preComputedCos, double preComputedSin)
+uint64_t C_NApi_CoreSlam_8bppMap::ComputeMatching(double posX__mm, double posY__mm, double preComputedCos, double preComputedSin, double *thread_cache_X, double *thread_cache_Y)
 {
 #ifdef ENABLE_MAP_BOUNDARIES_CHECK
     uint32_t nbOfPoints = 0;
@@ -433,8 +624,8 @@ uint64_t C_NApi_CoreSlam_8bppMap::ComputeMatching(double posX__mm, double posY__
     int32_t i = m_opti_nbOfMeasuresTakenIntoAccount_minus1;
     double * ptX = m_tabOfLidarMeasuresInCartesianRef_X__mm + i;
     double * ptY = m_tabOfLidarMeasuresInCartesianRef_Y__mm + i;
-    double * ptCachedX = m_opti_computeMatching_cached_X + i;
-    double * ptCachedY = m_opti_computeMatching_cached_Y + i;
+    double * ptCachedX = thread_cache_X + i;
+    double * ptCachedY = thread_cache_Y + i;
 
     // Translate and rotate scan to robot currentPosition
     // and compute the CalcDistance
@@ -482,7 +673,7 @@ uint64_t C_NApi_CoreSlam_8bppMap::ComputeMatching(double posX__mm, double posY__
 
 
 //Calculer la ressemblance entre le scan et la carte
-uint64_t C_NApi_CoreSlam_8bppMap::Opti_ComputeMatching(double xInMm, double yInMm)
+uint64_t C_NApi_CoreSlam_8bppMap::Opti_ComputeMatching(double xInMm, double yInMm, double *thread_cache_X, double *thread_cache_Y)
 {
 #ifdef ENABLE_MAP_BOUNDARIES_CHECK
     uint32_t nb_points = 0;
@@ -495,8 +686,8 @@ uint64_t C_NApi_CoreSlam_8bppMap::Opti_ComputeMatching(double xInMm, double yInM
     double yInPixel = yInMm * CONV_MM_2_PIXEL;
 
     int32_t i = m_opti_nbOfMeasuresTakenIntoAccount_minus1;
-    double * ptCachedX = m_opti_computeMatching_cached_X + i;
-    double * ptCachedY = m_opti_computeMatching_cached_Y + i;
+    double * ptCachedX = thread_cache_X + i;
+    double * ptCachedY = thread_cache_Y + i;
 
     // Translate and rotate scan to robot currentPosition
     // and compute the CalcDistance
@@ -540,6 +731,8 @@ uint64_t C_NApi_CoreSlam_8bppMap::Opti_ComputeMatching(double xInMm, double yInM
 
 void C_NApi_CoreSlam_8bppMap::UpdateMap()
 {
+    m_perf_stat[2]->set_t0();
+
     double x2p, y2p;
     int32_t x2, y2, xp, yp;
     double add;
@@ -603,6 +796,9 @@ void C_NApi_CoreSlam_8bppMap::UpdateMap()
             }
         }
     }
+
+    m_perf_stat[2]->set_t_and_compute_perf(1);
+
 }
 
 void C_NApi_CoreSlam_8bppMap::UpdateThumbnailMap()
@@ -1221,3 +1417,102 @@ void C_NApi_CoreSlam_8bppMap::ThumbnailRayTraceInstantLidarData(int32_t x1, int3
         x++; ptD += incptrx;
     }
 }
+
+void C_NApi_CoreSlam_8bppMap::DisplayPerfGlobal()
+{
+    int i;
+
+    for (i=0; i<m_perf_analysers; i++) {
+        m_perf_stat[i]->DisplayPerfGlobal();
+    }
+}
+
+void C_NApi_CoreSlam_8bppMap::ResetPerfGlobal()
+{
+    int i;
+
+    for (i=0; i<m_perf_analysers; i++) {
+        m_perf_stat[i]->ResetPerfGlobal();
+    }
+}
+
+
+C_NApi_CoreSlam_8bppMap_PerfAnalyser::C_NApi_CoreSlam_8bppMap_PerfAnalyser(
+    char *my_name, unsigned int perf_points)
+{
+    m_name = my_name;
+    m_perf_points = perf_points;
+    ResetPerfGlobal();
+    set_t0();
+}
+
+C_NApi_CoreSlam_8bppMap_PerfAnalyser::~C_NApi_CoreSlam_8bppMap_PerfAnalyser()
+{
+}
+
+void C_NApi_CoreSlam_8bppMap_PerfAnalyser::ResetPerfGlobal()
+{
+    unsigned int i;
+
+    for (i=0; i<m_perf_points; i++) {
+        m_worst_dt[i] = 0;
+        m_best_dt[i]  = 0xffffffff;
+        m_mean_dt[i]  = 0;
+    }
+    m_count_ts = 0;
+}
+
+void C_NApi_CoreSlam_8bppMap_PerfAnalyser::DisplayPerfGlobal()
+{
+    unsigned int i;
+
+    printf (" %s:\n", m_name);
+
+    for (i=1; i<m_perf_points; i++) {
+        DisplayPerf(i);
+    }
+}
+
+void C_NApi_CoreSlam_8bppMap_PerfAnalyser::DisplayPerf(int i)
+{
+    if (i<1) return;
+
+    printf ("  DT%d:\n", i);
+
+    printf ("   worst = %d usec\n", m_worst_dt[i]);
+    printf ("   best  = %d usec\n", m_best_dt[i]);
+    printf ("   mean  = %d usec\n", m_mean_dt[i]);
+}
+
+unsigned int C_NApi_CoreSlam_8bppMap_PerfAnalyser::get_delta_time_usec(
+    struct timeval *t1, struct timeval *t0)
+{
+    int delta_sec  = t1->tv_sec - t0->tv_sec;
+    int delta_usec  = t1->tv_usec - t0->tv_usec;
+
+    return delta_sec*1000000 + delta_usec;
+}
+
+void C_NApi_CoreSlam_8bppMap_PerfAnalyser::set_t0()
+{
+    unsigned int i;
+
+    gettimeofday(&m_t[0], NULL);
+    for (i=1; i<m_perf_points; i++) {
+        m_t[i].tv_sec = m_t[0].tv_sec;
+        m_t[i].tv_usec = m_t[0].tv_usec;
+    }
+    m_count_ts++;
+}
+
+void C_NApi_CoreSlam_8bppMap_PerfAnalyser::set_t_and_compute_perf(int i)
+{
+    if (i<1) return;
+
+    gettimeofday(&m_t[i], NULL);
+    unsigned int my_delta_t = get_delta_time_usec(&m_t[i], &m_t[i-1]);
+    m_worst_dt[i] = (my_delta_t>m_worst_dt[i])?my_delta_t:m_worst_dt[i];
+    m_best_dt[i] =  (my_delta_t<m_best_dt[i])?my_delta_t:m_best_dt[i];
+    m_mean_dt[i]=   (m_mean_dt[i]*(m_count_ts-1)+my_delta_t)/m_count_ts;
+}
+
